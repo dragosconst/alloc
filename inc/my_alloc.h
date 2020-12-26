@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
+#ifndef MYALLOC_INCLU
+#define MYALLOC_INCLU
+
 typedef enum{
 	VSMALL,
 	SMALL,
@@ -28,6 +31,7 @@ typedef struct my_block {
 }d_block;
 
 extern d_heap heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
+extern pthread_mutex_t global_mutex;		
 
 #define META_BLOCK_SIZE sizeof(struct my_block)
 #define META_HEAP_SIZE  sizeof(struct my_heap)
@@ -42,7 +46,9 @@ void* my_realloc(void* ptr, size_t newsize);
 
 // functii interne ale bibliotecii
 d_heap* search_for_free_heap(size_t size);
-d_block* search_for_free_block(size_t size, d_heap* heap);
+d_block* search_for_free_block(size_t size, d_heap* heap); // un heap free ori are un bloc liber, ori mai are spatiu in coada
 //void defragment_heap(d_heap* heap);
-void* create_heap(size_t size);
-void* append_block(size_t size, d_heap* heap);
+d_heap* create_heap(size_t size);
+void append_block(d_heap* heap, d_block* block);
+
+#endif //MYALLOC_INCLU
