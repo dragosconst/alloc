@@ -27,7 +27,7 @@ typedef struct my_block {
 	struct my_block* prev;
 	struct my_block* next;
 	size_t           size;
-	int				 free;
+	int		  		 free;
 }d_block;
 
 extern d_heap heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
@@ -49,6 +49,7 @@ d_heap* search_for_free_heap(size_t size);
 d_block* search_for_free_block(size_t size, d_heap* heap); // un heap free ori are un bloc liber, ori mai are spatiu in coada
 //void defragment_heap(d_heap* heap);
 d_heap* create_heap(size_t size);
-void append_block(d_heap* heap, d_block* block);
+d_block* append_block(size_t size, d_heap* heap);
+size_t closest_page_size(size_t size);
 
 #endif //MYALLOC_INCLU
