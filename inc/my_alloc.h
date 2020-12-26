@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -30,7 +31,7 @@ typedef struct my_block {
 	int		  		 free;
 }d_block;
 
-extern d_heap heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
+extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
 extern pthread_mutex_t global_mutex;		
 
 #define META_BLOCK_SIZE sizeof(struct my_block)

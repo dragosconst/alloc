@@ -9,20 +9,21 @@
 	Denumirea functiei poate fi un pic misleading, eu nu adaug nimic concret la heap,
 	doar marchez o sectiune de la finalul sau ca fiind rezervata acestui bloc.
 */
+#include "my_alloc.h"
 
 d_block*
 append_block(size_t size, d_heap* heap)
 {
 	d_block* traverse = (d_block*)(heap + 1);
 	size_t total_unusable_space = 0; // ii zic unusable space pt ca nu e neaparat spatiu folosit, dar daca e gol, e sigur prea mic pt size-ul pe care il cerem
-	while(*traverse && traverse->next)
+	while(traverse->next)
 	{
 		traverse = traverse->next;
 		total_unusable_space += traverse->size;
 	}
 
 	// acum in traverse e ultimul bloc alocat din heap
-	if(!*traverse) // daca avem un heap gol
+	if(traverse == (d_block*)(heap + 1)) // daca avem un heap gol
 	{
 		d_block* newblock = (d_block*)(heap + 1);
 		newblock->prev = NULL;
@@ -53,7 +54,6 @@ search_for_free_block(size_t size, d_heap* heap)
 	// desigur, asta nu inseamna neaparat ca exista un bloc free destul de mare, poate
 	// avem la final spatiul (sau poate heap-ul trebuie defragmentat)
 	d_block* traverse = (d_block*)(heap + 1);
-	if(!*traverse) return NULL; // heap gol
 	while(traverse->next)
 	{
 		if(traverse->free && traverse->size >= size)

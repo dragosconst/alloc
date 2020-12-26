@@ -22,7 +22,7 @@ d_heap*
 create_heap(size_t size)
 {
 	d_heap* heap;
-	if(size < VMSALL_BLOCK_SIZE)
+	if(size < VSMALL_BLOCK_SIZE)
 	{
 		heap = (d_heap*)mmap(NULL, getpagesize(), PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 		if(heap == MAP_FAILED)

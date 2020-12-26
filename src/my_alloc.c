@@ -1,7 +1,7 @@
 #include "my_alloc.h"
 
-heap_top = NULL;
-pthread_mutex_init(&global_mutex, NULL);
+d_heap* heap_top = NULL;
+pthread_mutex_t global_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void*
 my_alloc(size_t size)
