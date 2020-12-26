@@ -4,7 +4,7 @@ heap_top = NULL;
 pthread_mutex_init(&global_mutex, NULL);
 
 void*
-my_allocp(size_t size)
+my_alloc(size_t size)
 {
 	if(size <= 0)
 		return NULL;
@@ -15,6 +15,10 @@ my_allocp(size_t size)
 	if(!heap_top)
 	{
 		heap = create_heap(size);
+		if(heap == NULL)
+		{
+			return NULL;
+		}
 		heap->next = NULL;
 		heap->prev = NULL;
 		heap_top = heap;
@@ -42,6 +46,10 @@ my_allocp(size_t size)
 		else
 		{
 			heap = create_heap(size);
+			if(heap == NULL)
+			{
+				return NULL;
+			}
 			// heap top swap
 			heap_top->next = heap;
 			heap->prev = heap_top;
