@@ -23,9 +23,12 @@ my_alloc(size_t size)
 		heap->prev = NULL;
 		heap_top = heap;
 
-		block = search_for_free_block(size, heap);
-		block->free = 0;
-		append_block(heap, block);
+		block = append_block(size, heap);;
+		if(!block)
+		{
+			printf("unpsecified error");
+			return NULL;
+		}
 		return (block + 1);
 	}
 	else
@@ -34,13 +37,13 @@ my_alloc(size_t size)
 		if(heap)
 		{
 			block = search_for_free_block(size, heap);
+			if(!block)
+				block = append_block(size, heap);
 			if(!block) // eroare de fragmentare
 			{
 				printf("eroare de fragmentare\n!");
 				return NULL;
 			}
-			block->free = 0;
-			append_block(heap, block);
 			return (block + 1);
 		}
 		else
@@ -56,9 +59,12 @@ my_alloc(size_t size)
 			heap->next = NULL;
 			heap_top = heap;
 
-			block = search_for_free_block(size, heap);
-			block->free = 0;
-			append_block(heap, block);
+			block = append_block(size, heap);
+			if(!block)
+			{
+				printf("unpsecified error");
+				return NULL;
+			}
 			return (block + 1);
 		}
 	}
