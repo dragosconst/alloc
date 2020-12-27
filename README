@@ -1,0 +1,2 @@
+compile order (momentan):
+compile_first.c -> utils.c -> heap.c -> block.c -> my_alloc.c -> block_free.c -> my_free.c
