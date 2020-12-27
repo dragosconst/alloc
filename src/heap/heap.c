@@ -28,7 +28,7 @@ create_heap(size_t size)
 		if(heap == MAP_FAILED)
 			return NULL;
 		heap->type = VSMALL;
-		heap->all_size = heap->free_size = getpagesize() - sizeof(d_heap);
+		heap->all_size = heap->free_size = heap->free_end_size =  getpagesize() - sizeof(d_heap);
 		return heap;
 	}
 	else if(size < SMALL_BLOCK_SIZE)
@@ -37,7 +37,7 @@ create_heap(size_t size)
 		if(heap == MAP_FAILED)
 			return NULL;
 		heap->type = SMALL;
-		heap->all_size = heap->free_size = getpagesize() - sizeof(d_heap);
+		heap->all_size = heap->free_size = heap->free_end_size = getpagesize() - sizeof(d_heap);
 		return heap;
 	}
 	else
@@ -46,7 +46,7 @@ create_heap(size_t size)
 		if(heap == MAP_FAILED)
 			return NULL;
 		heap->type = NORMAL;
-		heap->all_size = heap->free_size = closest_page_size(size + sizeof(d_heap)) - sizeof(d_heap);
+		heap->all_size = heap->free_size = heap->free_end_size = closest_page_size(size + sizeof(d_heap)) - sizeof(d_heap);
 		return heap;
 	}
 }
@@ -62,7 +62,9 @@ search_for_free_heap(size_t size)
 
 	while(heap)
 	{
-		if(heap->type == correct_type && heap->free_size >= size)
+		if(heap->type == correct_type &&
+		  ((heap->free_size >= size && heap->free_size - heap->free_end_size >= size) || (heap->free_end_size >= size + sizeof(d_block)))
+			// verific mai exact daca ori am destul free size in vreun block freed, ori am destul free size in coada heap-ului
 			return heap;
 		heap = heap->prev; // heap_top e heap-ul fara next, deci mergem catre prev
 	}

@@ -19,20 +19,21 @@ typedef enum{
 typedef struct my_heap{
 	struct my_heap* prev;
 	struct my_heap* next;
-	heap_type		type;
+	heap_type	type;
 	size_t          all_size;
 	size_t          free_size;
+	size_t		free_end_size; // asta e spatiul liber care nu e ocupat de niciun bloc (free sau nu), ii zice "end" pt ca se afla in coada heap-ului mereu
 }d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
 
 typedef struct my_block {
 	struct my_block* prev;
 	struct my_block* next;
 	size_t           size;
-	int		  		 free;
+	int		 free;
 }d_block;
 
 extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
-extern pthread_mutex_t global_mutex;		
+extern pthread_mutex_t global_mutex;
 
 #define META_BLOCK_SIZE sizeof(struct my_block)
 #define META_HEAP_SIZE  sizeof(struct my_heap)
@@ -51,6 +52,7 @@ d_block* search_for_free_block(size_t size, d_heap* heap); // un heap free ori a
 //void defragment_heap(d_heap* heap);
 d_heap* create_heap(size_t size);
 d_block* append_block(size_t size, d_heap* heap);
+d_block* split_block(size_t size, d_block* block);
 size_t closest_page_size(size_t size);
 
 #endif //MYALLOC_INCLU

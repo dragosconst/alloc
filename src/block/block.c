@@ -30,19 +30,25 @@ append_block(size_t size, d_heap* heap)
 		newblock->next = NULL;
 		newblock->size = size;
 		newblock->free = 0;
+		// modify heap
+		heap->free_end_size -= sizeof(d_block) + size;
+		heap->free_size -= sizeof(d_block) + size;
 		return (newblock + 1);
 	}
 	else
 	{
 		// trebuie verificat manual daca avem spatiu in coada la final
-		if(heap->all_size - total_unusable_space < size)
+		if(heap->all_size - total_unusable_space - sizeof(d_block) < size)
 			return NULL;
-		d_block* newblock = (d_block*)(traverse + 1 + traverse->size);
+		d_block* newblock = (d_block*)((void*)traverse + sizeof(d_block) + traverse->size));
 		newblock->prev = traverse;
 		newblock->next = NULL;
 		traverse->next = newblock;
 		newblock->size = size;
 		newblock->free = 0;
+		// modify heap
+		heap->free_end_size -= sizeof(d_block) + size;
+		heap->free_size -= sizeof(d_block) + size;
 		return (newblock + 1);
 	}
 }
@@ -58,11 +64,35 @@ search_for_free_block(size_t size, d_heap* heap)
 	{
 		if(traverse->free && traverse->size >= size)
 		{
-			// de implementat si split block mai incolo
+			if(traverse->size > size)
+			{
+				traverse = split_block(size, traverse);
+			}
 			traverse->free = 0;
+			// modify heap
+			heap->free_size -= size;
 			return traverse;
 		}
 		traverse = traverse->next;
 	}
 	return NULL;// nu avem niciun free block destul de mare
+}
+
+d_block*
+split_block(size_t size, d_block* block)
+{
+	if(block->size - size <= sizeof(d_block)) // daca spatiul in plus e prea mic sa mai bagam metadate
+	{
+		return block; // nu are rost sa fac split, ca as corupe segmentul de date
+	}
+	d_block* newblock = (d_block*)((void*)block + sizeof(d_block) + size);
+	newblock->size = block->size - size - sizeof(d_block);
+	newblock->free = 1;
+	newblock->prev = block;
+	newblock->next = block->next;
+	// trebuie scos din free size ul heap-ului spatiul ocupat de metadatele blocului nou
+	heap->free_size -= sizeof(d_block);
+	block->size = size;
+	block->next = newblock;
+	return block;
 }
