@@ -2,6 +2,8 @@
 	Aici sunt functii pentru eliberarea blocurilor de memorie (sau functii care ajuta la eliberarea blocurilor).
 */
 
+#include "my_alloc.h"
+
 int
 is_valid_addr(void* addr) // verific daca exista vreun bloc cu adresa data de user
 {

@@ -25,15 +25,15 @@ my_free(void* ptr)
 	}
 	heap->free_size += block->size;
 	// merging
-	if(block->prev->free) // blocul de dinainte era free
+	if(block->prev && block->prev->free) // blocul de dinainte era free
 	{
 		block = merge_blocks(block->prev, block);
 		heap->free_size += sizeof(d_block); // un block de metadate poate fi suprascris dupa merge
 	}
-	if(block->next->free)
+	if(block->next && block->next->free)
 	{
 		block = merge_blocks(block, block->next);
 		heap->free_size += sizeof(d_block);
 	}
-	ptr = NULL; // protectie anti double free, try for something better
+	// no double free protection, in standard am vazut ca nu cere
 }

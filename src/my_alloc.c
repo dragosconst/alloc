@@ -20,12 +20,13 @@ my_alloc(size_t size)
 		heap->prev = NULL;
 		heap_top = heap;
 
-		block = append_block(size, heap);;
+		block = append_block(size, heap);
 		if(!block)
 		{
 			printf("unpsecified error");
 			return NULL;
 		}
+		//printf("am alocat la pozitia: %p", block);
 		return (block + 1);
 	}
 	else

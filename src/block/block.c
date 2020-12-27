@@ -26,6 +26,7 @@ append_block(size_t size, d_heap* heap)
 	if(traverse == (d_block*)(heap + 1)) // daca avem un heap gol
 	{
 		d_block* newblock = (d_block*)(heap + 1);
+		//printf("am lipit la pozitia %p\n", newblock);
 		newblock->prev = NULL;
 		newblock->next = NULL;
 		newblock->size = size;
@@ -33,14 +34,14 @@ append_block(size_t size, d_heap* heap)
 		// modify heap
 		heap->free_end_size -= sizeof(d_block) + size;
 		heap->free_size -= sizeof(d_block) + size;
-		return (newblock + 1);
+		return newblock;
 	}
 	else
 	{
 		// trebuie verificat manual daca avem spatiu in coada la final
 		if(heap->all_size - total_unusable_space - sizeof(d_block) < size)
 			return NULL;
-		d_block* newblock = (d_block*)((void*)traverse + sizeof(d_block) + traverse->size));
+		d_block* newblock = (d_block*)((void*)traverse + sizeof(d_block) + traverse->size);
 		newblock->prev = traverse;
 		newblock->next = NULL;
 		traverse->next = newblock;
@@ -49,7 +50,7 @@ append_block(size_t size, d_heap* heap)
 		// modify heap
 		heap->free_end_size -= sizeof(d_block) + size;
 		heap->free_size -= sizeof(d_block) + size;
-		return (newblock + 1);
+		return newblock;
 	}
 }
 
@@ -60,13 +61,14 @@ search_for_free_block(size_t size, d_heap* heap)
 	// desigur, asta nu inseamna neaparat ca exista un bloc free destul de mare, poate
 	// avem la final spatiul (sau poate heap-ul trebuie defragmentat)
 	d_block* traverse = (d_block*)(heap + 1);
-	while(traverse->next)
+	while(traverse)
 	{
 		if(traverse->free && traverse->size >= size)
 		{
 			if(traverse->size > size)
 			{
 				traverse = split_block(size, traverse);
+				heap->free_size -= sizeof(d_block);
 			}
 			traverse->free = 0;
 			// modify heap
@@ -91,7 +93,6 @@ split_block(size_t size, d_block* block)
 	newblock->prev = block;
 	newblock->next = block->next;
 	// trebuie scos din free size ul heap-ului spatiul ocupat de metadatele blocului nou
-	heap->free_size -= sizeof(d_block);
 	block->size = size;
 	block->next = newblock;
 	return block;
