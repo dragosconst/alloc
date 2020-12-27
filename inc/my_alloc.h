@@ -42,7 +42,7 @@ extern pthread_mutex_t global_mutex;
 
 // functiile importante
 void* my_alloc(size_t size);
-void* my_free(void* ptr);
+void my_free(void* ptr);
 void* my_calloc(size_t count, size_t size);
 void* my_realloc(void* ptr, size_t newsize);
 
@@ -54,5 +54,8 @@ d_heap* create_heap(size_t size);
 d_block* append_block(size_t size, d_heap* heap);
 d_block* split_block(size_t size, d_block* block);
 size_t closest_page_size(size_t size);
+int is_valid_addr(void* addr);
+d_heap* get_heap_of_block(d_block* block);
+d_block* merge_blocks(d_block* bl, d_block* br);
 
 #endif //MYALLOC_INCLU
