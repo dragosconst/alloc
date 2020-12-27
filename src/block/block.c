@@ -23,7 +23,7 @@ append_block(size_t size, d_heap* heap)
 	}
 
 	// acum in traverse e ultimul bloc alocat din heap
-	if(traverse == (d_block*)(heap + 1)) // daca avem un heap gol
+	if(traverse->size == 0) // daca avem un heap gol, deoarece mmap pune zero pe tot heap-ul in afara de metadate, si pt ca un malloc de 0 returneaza NULL, asa stim garantat ca daca size e 0 inseamna ca toata structura e 0
 	{
 		d_block* newblock = (d_block*)(heap + 1);
 		//printf("am lipit la pozitia %p\n", newblock);

@@ -20,7 +20,7 @@ my_free(void* ptr)
 	d_heap* heap = get_heap_of_block(block);
 	if(!heap)
 	{
-		printf("unspecified free error\n");
+		printf("no suitable heap found in free function\n");
 		return;
 	}
 	heap->free_size += block->size;

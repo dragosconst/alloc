@@ -29,11 +29,11 @@ get_heap_of_block(d_block* block)
 	while(heap)
 	{
 		d_block* _block = (d_block*)(heap + 1);
-		while(block)
+		while(_block)
 		{
 			if(_block == block)
 				return heap;
-			block = block->next;
+			_block = _block->next;
 		}
 		heap = heap->prev;
 	}
@@ -47,6 +47,7 @@ merge_blocks(d_block* bl, d_block* br)
 	// de observat ca e mostenita valoarea de free din bl
 	bl->size += sizeof(d_block) + br->size;
 	bl->next = br->next;
-	br->next->prev = bl;
+	if(br->next)
+		br->next->prev = bl;
 	return bl;
 }

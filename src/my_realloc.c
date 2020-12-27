@@ -10,7 +10,7 @@ void*
 my_realloc(void* ptr, size_t newsize)
 {
 	if(!ptr) // realloc pe NULL e malloc
-		return my_alloc(size);
+		return my_alloc(newsize);
 
 	d_block* block = ptr - sizeof(d_block);
 	if(!is_valid_addr(block))
