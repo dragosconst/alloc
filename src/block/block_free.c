@@ -44,6 +44,7 @@ d_block*
 merge_blocks(d_block* bl, d_block* br)
 {
 	// ordinea argumentelor e importanta, ca sa fie mai usoara implementarea
+	// de observat ca e mostenita valoarea de free din bl
 	bl->size += sizeof(d_block) + br->size;
 	bl->next = br->next;
 	br->next->prev = bl;

@@ -19,10 +19,10 @@ typedef enum{
 typedef struct my_heap{
 	struct my_heap* prev;
 	struct my_heap* next;
-	heap_type	type;
+	heap_type		type;
 	size_t          all_size;
 	size_t          free_size;
-	size_t		free_end_size; // asta e spatiul liber care nu e ocupat de niciun bloc (free sau nu), ii zice "end" pt ca se afla in coada heap-ului mereu
+	size_t			free_end_size; // asta e spatiul liber care nu e ocupat de niciun bloc (free sau nu), ii zice "end" pt ca se afla in coada heap-ului mereu
 }d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
 
 typedef struct my_block {

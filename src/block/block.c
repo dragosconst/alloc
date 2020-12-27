@@ -81,7 +81,7 @@ search_for_free_block(size_t size, d_heap* heap)
 }
 
 d_block*
-split_block(size_t size, d_block* block)
+split_block(size_t size, d_block* block) // nu modifica campul free din block-ul initial
 {
 	if(block->size - size <= sizeof(d_block)) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
