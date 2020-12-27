@@ -5,7 +5,7 @@
 #include "my_alloc.h"
 
 void
-free(void* ptr)
+my_free(void* ptr)
 {
 	if(!ptr || !heap_top)
 		return;
