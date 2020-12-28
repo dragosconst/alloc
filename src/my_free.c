@@ -35,5 +35,14 @@ my_free(void* ptr)
 		block = merge_blocks(block, block->next);
 		heap->free_size += sizeof(d_block);
 	}
+	// daca e ultimul bloc din heap, il "sterg", adica il scot din lista de blocuri si il transform efectiv in memoria unmapped din heap
+	if(block->next == NULL)
+	{
+		heap->free_end_size += block->size + sizeof(d_block);
+		heap->free_size += block->size + sizeof(d_block);
+		if(block->prev)
+			block->prev->next = NULL;
+		block->size = 0; // asta s-ar putea sa fie necesar pt functia search_for_free_block
+	}
 	// no double free protection, in standard am vazut ca nu cere
 }
