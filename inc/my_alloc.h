@@ -48,9 +48,11 @@ void* my_realloc(void* ptr, size_t newsize);
 
 // functii interne ale bibliotecii
 d_heap* search_for_free_heap(size_t size);
+d_heap* heap_of_same_type(size_t size);
+int is_compatible_type(heap_type my_type, heap_type cmp_type);
 d_block* search_for_free_block(size_t size, d_heap* heap); // un heap free ori are un bloc liber, ori mai are spatiu in coada
-//void defragment_heap(d_heap* heap);
 d_heap* create_heap(size_t size);
+d_heap* expand_heap(d_heap* heap, size_t extra_size);
 d_block* append_block(size_t size, d_heap* heap);
 d_block* split_block(size_t size, d_block* block);
 size_t closest_page_size(size_t size);
