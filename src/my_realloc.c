@@ -47,7 +47,7 @@ my_realloc(void* ptr, size_t newsize)
 		{	// trebuie cautat altundeva spatiu
 			size_t copy_for = block->size;
 			void* data = block + 1; // atentie la multi-threading, nu vrem sa ne corupa cineva datele de aici
-			my_free(block);
+			my_free(data);
 
 			void* new_add = my_alloc(newsize);
 			d_block* to_move = new_add - sizeof(d_block);

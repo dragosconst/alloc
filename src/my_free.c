@@ -13,7 +13,7 @@ my_free(void* ptr)
 	d_block* block = (void*)ptr - sizeof(d_block);
 	if(!is_valid_addr(block))
 	{
-		printf("free pe valori non-freeable\n");
+		printf("free pe valori non-freeable %p\n", block);
 		return;
 	}
 	block->free = 1;
