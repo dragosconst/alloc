@@ -30,7 +30,8 @@ create_heap(size_t size)
 		if(heap == MAP_FAILED)
 			return NULL;
 		heap->type = VSMALL;
-		heap->all_size = heap->free_size = heap->free_end_size =  getpagesize() - sizeof(d_heap);
+		heap->all_size = heap->free_end_size =  getpagesize() - sizeof(d_heap);
+		heap->biggest_fblock = 0;
 		return heap;
 	}
 	else if(size < SMALL_BLOCK_SIZE)
@@ -39,7 +40,8 @@ create_heap(size_t size)
 		if(heap == MAP_FAILED)
 			return NULL;
 		heap->type = SMALL;
-		heap->all_size = heap->free_size = heap->free_end_size = getpagesize() - sizeof(d_heap);
+		heap->all_size = heap->free_end_size = getpagesize() - sizeof(d_heap);
+		heap->biggest_fblock = 0;
 		return heap;
 	}
 	else
@@ -48,7 +50,8 @@ create_heap(size_t size)
 		if(heap == MAP_FAILED)
 			return NULL;
 		heap->type = NORMAL;
-		heap->all_size = heap->free_size = heap->free_end_size = closest_page_size(size + sizeof(d_heap)) - sizeof(d_heap);
+		heap->all_size = heap->free_end_size = closest_page_size(size + sizeof(d_heap)) - sizeof(d_heap);
+		heap->biggest_fblock = 0;
 		return heap;
 	}
 }
@@ -78,42 +81,15 @@ search_for_free_heap(size_t size)
 	while(heap)
 	{
 		if(heap->type == correct_type &&
-		  ((heap->free_size >= size && heap->free_size - heap->free_end_size >= size) || (heap->free_end_size >= size + sizeof(d_block))))
+		  (heap->biggest_fblock >= size || (heap->free_end_size >= size + sizeof(d_block))))
 			// verific mai exact daca ori am destul free size in vreun block freed, ori am destul free size in coada heap-ului
 			return heap;
 		else if(is_compatible_type(correct_type, heap->type) &&
-		  ((heap->free_size >= size && heap->free_size - heap->free_end_size >= size) || (heap->free_end_size >= size + sizeof(d_block))))
+		  (heap->biggest_fblock >= size || (heap->free_end_size >= size + sizeof(d_block))))
 			return heap;
 		heap = heap->prev; // heap_top e heap-ul fara next, deci mergem catre prev
 	}
 	return NULL; // n avem heap necesar
-}
-
-d_heap*
-expand_heap(d_heap* heap, size_t extra_size)
-{
-	// ca sa simplific apeluri la functia asta, extra_size 0 inseamna un page
-	if(extra_size == 0) extra_size = getpagesize();
-
-	d_heap* old_heap = heap;
-	heap = (d_heap*)mmap(NULL, heap->all_size + extra_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-	if(heap == MAP_FAILED)
-		return NULL;
-	if(heap_top == old_heap)
-		heap_top = heap;
-	heap->next = old_heap->next;
-	if(old_heap->next)
-		heap->next->prev = heap;
-	heap->prev = old_heap->prev;
-	if(old_heap->prev)
-		heap->prev->next = heap;
-	heap->type = old_heap->type;
-	heap->all_size = old_heap->all_size + closest_page_size(extra_size);
-	heap->free_size = old_heap->free_size + closest_page_size(extra_size);
-	heap->free_end_size = old_heap->free_size + closest_page_size(extra_size);
-
-	memcpy(heap, old_heap, old_heap->all_size);
-	munmap(old_heap, old_heap->all_size);
 }
 
 d_heap*

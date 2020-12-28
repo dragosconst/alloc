@@ -27,33 +27,27 @@ my_realloc(void* ptr, size_t newsize)
 	}
 	else // trebuie sa cautam undeva
 	{
-		// mai intai ma uit daca blocul liber dupa el e destul de mare
+		// mai intai ma uit daca blocul dupa el e liber si destul de mare
 		size_t remainder_size = newsize - block->size;
 		d_block* next_block = block->next;
 		d_heap* heap = get_heap_of_block(block);
-		if(next_block && next_block->size + sizeof(d_block) >= remainder_size)
-		{	// adica, daca putem lua blocul urmatorul (care e liber) si sa-l lipim de asta
+		if(next_block && next_block->free && next_block->size + sizeof(d_block) >= remainder_size)
+		{	// adica, daca putem lua blocul urmator si sa-l lipim de asta
 			block = merge_blocks(block, next_block);
 			block = split_block(newsize, block);
-			heap->free_size -= remainder_size - sizeof(d_block);
 			return (block + 1);
 		}
 		else if(next_block == NULL && heap->free_end_size >= remainder_size)
 		{	// daca avem in coada heap-ului spatiu nealocat destul
 			block->size = newsize; // il luam pur si simplu
 			heap->free_end_size -= remainder_size;
-			heap->free_size -= remainder_size;
 			return (block + 1);
 		}
 		else
-		{
+		{	// trebuie cautat altundeva spatiu
 			size_t copy_for = block->size;
-			void* data = block + 1;
-			block->free = 1;
-			if(block->prev && block->prev->free)
-				block = merge_blocks(block->prev, block);
-			if(block->next && block->next->free)
-				block = merge_blocks(block, block->next);
+			void* data = block + 1; // atentie la multi-threading, nu vrem sa ne corupa cineva datele de aici
+			my_free(block);
 
 			void* new_add = my_alloc(newsize);
 			d_block* to_move = new_add - sizeof(d_block);

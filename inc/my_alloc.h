@@ -21,7 +21,7 @@ typedef struct my_heap{
 	struct my_heap* next;
 	heap_type		type;
 	size_t          all_size;
-	size_t          free_size;
+	size_t          biggest_fblock;
 	size_t			free_end_size; // asta e spatiul liber care nu e ocupat de niciun bloc (free sau nu), ii zice "end" pt ca se afla in coada heap-ului mereu
 }d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
 
@@ -51,8 +51,8 @@ d_heap* search_for_free_heap(size_t size);
 d_heap* heap_of_same_type(size_t size);
 int is_compatible_type(heap_type my_type, heap_type cmp_type);
 d_block* search_for_free_block(size_t size, d_heap* heap); // un heap free ori are un bloc liber, ori mai are spatiu in coada
+size_t find_biggest_free_block(d_heap* heap);
 d_heap* create_heap(size_t size);
-d_heap* expand_heap(d_heap* heap, size_t extra_size);
 d_block* append_block(size_t size, d_heap* heap);
 d_block* split_block(size_t size, d_block* block);
 size_t closest_page_size(size_t size);

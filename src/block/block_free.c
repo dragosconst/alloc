@@ -51,3 +51,17 @@ merge_blocks(d_block* bl, d_block* br)
 		br->next->prev = bl;
 	return bl;
 }
+
+size_t
+find_biggest_free_block(d_heap* heap)
+{
+	size_t maxsize = 0;
+	d_block* traverse = (d_block*)(heap + 1);
+	while(traverse)
+	{
+		if(traverse->free && traverse->size > maxsize)
+			maxsize = traverse->size;
+		traverse = traverse->next;
+	}
+	return maxsize;
+}

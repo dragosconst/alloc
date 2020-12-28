@@ -23,23 +23,27 @@ my_free(void* ptr)
 		printf("no suitable heap found in free function\n");
 		return;
 	}
-	heap->free_size += block->size;
+	if(block->size > heap->biggest_fblock)
+		heap->biggest_fblock = block->size;
 	// merging
 	if(block->prev && block->prev->free) // blocul de dinainte era free
 	{
 		block = merge_blocks(block->prev, block);
-		heap->free_size += sizeof(d_block); // un block de metadate poate fi suprascris dupa merge
+		if(block->size > heap->biggest_fblock)
+			heap->biggest_fblock = block->size;
 	}
 	if(block->next && block->next->free)
 	{
 		block = merge_blocks(block, block->next);
-		heap->free_size += sizeof(d_block);
+		if(block->size > heap->biggest_fblock)
+			heap->biggest_fblock = block->size;
 	}
 	// daca e ultimul bloc din heap, il "sterg", adica il scot din lista de blocuri si il transform efectiv in memoria unmapped din heap
 	if(block->next == NULL)
 	{
 		heap->free_end_size += block->size + sizeof(d_block);
-		heap->free_size += block->size + sizeof(d_block);
+		if(block->size == heap->biggest_fblock)
+			heap->biggest_fblock = find_biggest_free_block(heap);
 		if(block->prev)
 			block->prev->next = NULL;
 		block->size = 0; // asta s-ar putea sa fie necesar pt functia search_for_free_block

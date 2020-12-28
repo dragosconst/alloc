@@ -33,7 +33,6 @@ append_block(size_t size, d_heap* heap)
 		newblock->free = 0;
 		// modify heap
 		heap->free_end_size -= sizeof(d_block) + size;
-		heap->free_size -= sizeof(d_block) + size;
 		return newblock;
 	}
 	else
@@ -50,7 +49,6 @@ append_block(size_t size, d_heap* heap)
 		newblock->free = 0;
 		// modify heap
 		heap->free_end_size -= sizeof(d_block) + size;
-		heap->free_size -= sizeof(d_block) + size;
 		return newblock;
 	}
 }
@@ -68,12 +66,12 @@ search_for_free_block(size_t size, d_heap* heap)
 		{
 			if(traverse->size > size)
 			{
+				size_t old_size = traverse->size;
 				traverse = split_block(size, traverse);
-				heap->free_size -= sizeof(d_block);
+				if(old_size == heap->biggest_fblock)
+					heap->biggest_fblock = find_biggest_free_block(heap);
 			}
 			traverse->free = 0;
-			// modify heap
-			heap->free_size -= size;
 			return traverse;
 		}
 		traverse = traverse->next;

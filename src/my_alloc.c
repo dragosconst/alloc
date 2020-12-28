@@ -48,42 +48,18 @@ my_alloc(size_t size)
 		}
 		else
 		{
-			if(size > SMALL_BLOCK_SIZE)
+			heap = create_heap(size);
+			if(heap == NULL)
 			{
-				heap = create_heap(size);
-				if(heap == NULL)
-				{
-					return NULL;
-				}
-				// heap top swap
-				heap_top->next = heap;
-				heap->prev = heap_top;
-				heap->next = NULL;
-				heap_top = heap;
+				printf("heap error in malloc");
+				return NULL;
 			}
-			else
-			{	// pt blocuri mici e probabil mai eficient doar sa largim heap-ul vechi
-				heap = heap_of_same_type(size);
-				if(heap == NULL) // nu avem heap de tipul small\vsmall
-				{	// deci tot trebuie creat heap-ul
-					heap = create_heap(size);
-					if(heap == NULL)
-					{
-						return NULL;
-					}
-					// heap top swap
-					heap_top->next = heap;
-					heap->prev = heap_top;
-					heap->next = NULL;
-					heap_top = heap;
-				}
-				else
-				{
-					heap = expand_heap(heap, size);
-					if(heap == NULL)
-						return NULL;
-				}
-			}
+			// heap top swap
+			heap_top->next = heap;
+			heap->prev = heap_top;
+			heap->next = NULL;
+			heap_top = heap;
+
 			block = append_block(size, heap);
 			if(!block)
 			{
