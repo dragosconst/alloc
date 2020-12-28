@@ -19,7 +19,7 @@ append_block(size_t size, d_heap* heap)
 	while(traverse->next)
 	{
 		traverse = traverse->next;
-		total_unusable_space += traverse->size;
+		total_unusable_space += traverse->size + sizeof(d_block);
 	}
 
 	// acum in traverse e ultimul bloc alocat din heap
@@ -38,6 +38,7 @@ append_block(size_t size, d_heap* heap)
 	}
 	else
 	{
+		total_unusable_space += traverse->size; // pt ca while-ul se opreste la ultimu block, nu-i adauga niciodata size-ul in while
 		// trebuie verificat manual daca avem spatiu in coada la final
 		if(heap->all_size - total_unusable_space - sizeof(d_block) < size)
 			return NULL;

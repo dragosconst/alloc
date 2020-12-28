@@ -36,10 +36,12 @@ my_alloc(size_t size)
 		{
 			block = search_for_free_block(size, heap);
 			if(!block)
+			{
 				block = append_block(size, heap);
+			}
 			if(!block) // eroare de fragmentare
 			{
-				printf("eroare de fragmentare\n!");
+				printf("eroare de fragmentare!\n");
 				return NULL;
 			}
 			return (block + 1);
@@ -85,7 +87,7 @@ my_alloc(size_t size)
 			block = append_block(size, heap);
 			if(!block)
 			{
-				printf("unpsecified error");
+				printf("unpsecified error\n");
 				return NULL;
 			}
 			return (block + 1);

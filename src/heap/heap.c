@@ -56,10 +56,10 @@ create_heap(size_t size)
 int
 is_compatible_type(heap_type my_type, heap_type cmp_type)
 {
-	if(my_type == VSMALL_BLOCK_SIZE) // orice tip e compatibil
+	if(my_type == VSMALL) // orice tip e compatibil
 		return 1;
-	if(my_type == SMALL_BLOCK_SIZE)
-		if(cmp_type == VSMALL_BLOCK_SIZE) // small nu e compatibil cu vsmall
+	if(my_type == SMALL)
+		if(cmp_type == VSMALL) // small nu e compatibil cu vsmall
 			return 0;
 		else
 			return 1;
