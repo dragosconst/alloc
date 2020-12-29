@@ -38,9 +38,15 @@ my_free(void* ptr)
 		if(block->size > heap->biggest_fblock)
 			heap->biggest_fblock = block->size;
 	}
+
 	// daca e ultimul bloc din heap, il "sterg", adica il scot din lista de blocuri si il transform efectiv in memoria unmapped din heap
 	if(block->next == NULL)
 	{
+		if(heap->type == NORMAL && closest_page_size(block->size + sizeof(d_block)) / getpagesize() > 1)
+		{	// in heap-urile mari, daca dau free la pagini intregi, o sa dau inapoi niste pagini la OS
+			free_block_to_os(heap, block);
+			return;
+		}
 		heap->free_end_size += block->size + sizeof(d_block);
 		if(block->size == heap->biggest_fblock)
 			heap->biggest_fblock = find_biggest_free_block(heap);
