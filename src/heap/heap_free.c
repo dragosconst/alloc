@@ -55,7 +55,7 @@ try_free_block_to_os(d_heap* heap, d_block* block)
 	if(prev_block)
 	{
 		prev_block->next = NULL;
-		heap->free_end_size = remaining_size < total_freed_size ? remaining_size : total_freed_size;
+		heap->free_end_size = remaining_size < total_freed_size ? remaining_size : total_freed_size + heap->free_end_size;
 		return heap;
 	}
 	else
