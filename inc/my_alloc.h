@@ -60,7 +60,8 @@ d_block* split_block(size_t size, d_block* block);
 size_t closest_page_size(size_t size);
 int is_valid_addr(void* addr);
 d_heap* get_heap_of_block(d_block* block);
-d_heap* free_to_os(d_heap* heap, d_block* block);
+d_heap* try_free_block_to_os(d_heap* heap, d_block* block);
+int free_heap_to_os(d_heap* heap);
 d_block* merge_blocks(d_block* bl, d_block* br);
 
 #endif //MYALLOC_INCLU

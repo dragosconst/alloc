@@ -8,7 +8,6 @@ my_alloc(size_t size)
 
 	d_heap* heap;
 	d_block* block;
-
 	if(!heap_top)
 	{
 		heap = create_heap(size);
@@ -26,11 +25,13 @@ my_alloc(size_t size)
 			printf("unpsecified error");
 			return NULL;
 		}
+		//printf("heap %p has %ld left\n", heap, heap->free_end_size);
 		//printf("am alocat la pozitia: %p", block);
 		return (block + 1);
 	}
 	else
 	{
+		//printf("asking for %ld space\n", size);
 		heap = search_for_free_heap(size);
 		if(heap)
 		{
@@ -39,7 +40,7 @@ my_alloc(size_t size)
 			{
 				block = append_block(size, heap);
 			}
-			if(!block) // eroare de fragmentare
+			if(!block) // eroare de fragmentare; normal, nu ar trebui sa ajunga niciodata aici, biggest_fblock previne situatii de genu
 			{
 				printf("eroare de fragmentare!\n");
 				return NULL;
@@ -48,6 +49,7 @@ my_alloc(size_t size)
 		}
 		else
 		{
+			//printf("no suitable heap found\n");
 			heap = create_heap(size);
 			if(heap == NULL)
 			{

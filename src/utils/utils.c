@@ -8,5 +8,5 @@
 size_t
 closest_page_size(size_t size)
 {
-	return (size % getpagesize() == 0 ? size : size / getpagesize() + 1);
+	return (size % getpagesize() == 0 ? size : getpagesize() * (size / getpagesize() + 1));
 }
