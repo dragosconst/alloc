@@ -49,6 +49,7 @@ search_for_free_block(size_t size)
 		if(bin_index < 0) // nu exista literalmente niciun bin pe care-l putem lua
 			return NULL;
 		bin_block = pseudo_bins[bin_index];
+		printf("block.c: if exec halts here, possible bug in split_block\n");
 		bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
 
@@ -59,6 +60,7 @@ search_for_free_block(size_t size)
 			pseudo_bins[bin_index] = bin_block->next;
 		}
 		else pseudo_bins[bin_index] = NULL;
+		printf("block.c: request granted\n");
 		return bin_block;
 	}
 	bin_block->free = 0;
@@ -82,12 +84,15 @@ search_for_free_block(size_t size)
 d_block*
 split_block(size_t size, d_block* block) // nu modifica campul free din block-ul initial
 {
-	if(aligned_size(block->size - size) < aligned_size(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
+	// size has to be aligned
+	if(block->size - size < aligned_size(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
 	d_block* newblock = (d_block*)((void*)block + aligned_size(sizeof(d_block) + size));
+	printf("block.c: if exec halts here, newblock is bugged\n");
 	newblock->size = aligned_size(block->size - size - sizeof(d_block));
+	printf("bruh\n");
 	newblock->free = 1;
 	if(block->last)
 	{	// split pe ultimu bloc creeaza un nou ultim bloc

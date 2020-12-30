@@ -25,7 +25,7 @@ my_free(void* ptr)
 		free_heap_to_os(block);
 		return;
 	}
-	printf("free.c: before merging\n");
+	printf("free.c: before merging, size is %zd\n", block->size);
 	// merging
 	d_block* prev_block = get_prev_block(block);
 	d_block* next_block = get_next_block(block);
@@ -37,11 +37,11 @@ my_free(void* ptr)
 	{
 		block = merge_blocks(block, next_block);
 	}
-	printf("free.c: got past merges\n");
-	if(block->last && block->size > 3 * getpagesize())
+	printf("free.c: got past merges, size is %zd\n", block->size);
+	if(block->last && block->size > VBIG_BLOCK_SIZE * 2)
 	{	// 3 * pagesize nu e tocmai un nr mare, dar l am ales arbitrar ca sa pot testa usor daca elibereaza catre OS
 		free_some_to_os(block);
-		block->size -= 3 * getpagesize();
+		printf("free.c: trimming block, new size is %zd\n", block->size);
 	}
 
 	// insert free block in bin

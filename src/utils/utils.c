@@ -35,7 +35,11 @@ get_closest_bin_type(size_t size)
 {
 	int index = (size / 8) - 1;
 	if(index > 63)
-		index = 64;
+	{
+		if(size <= BIG_BLOCK_SIZE * 2 && pseudo_bins[64]) return 64;
+		if(size <= VBIG_BLOCK_SIZE * 2 && pseudo_bins[65]) return 65;
+		return -1;
+	}
 	for(int i = index; i < 66; ++i)
 		if(pseudo_bins[i] != NULL)
 			return i;
