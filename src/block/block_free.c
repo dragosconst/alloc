@@ -92,6 +92,7 @@ merge_blocks(d_block* bl, d_block* br)
 {
 	// ordinea argumentelor e importanta, ca sa fie mai usoara implementarea
 	// de observat ca e mostenita valoarea de free din bl, evident se presupune ca e free si bl, si br
+	printf("block_free.c: merging block of size %zd with block of size %zd\n", bl->size, br->size);
 	bl->size += sizeof(d_block) + br->size;
 	if(bl->size % 8) // logic nu ar trebui sa ajunga pe cazul asta niciodata
 		printf("weird size %ld\n", bl->size);

@@ -12,6 +12,11 @@ my_alloc(size_t size)
 	if(size <= 0)
 		return NULL;
 
+
+	for(int i = 0; i < 66;++i)
+	{	if(pseudo_bins[i])
+		printf("bin %d has size %zd\n", i, pseudo_bins[i]->size);
+	}
 	d_heap* heap;
 	d_block* block;
 	printf("my_alloc.c:asking for %ld space\n", size);

@@ -45,10 +45,10 @@ search_for_free_block(size_t size)
 	{
 		// poate totusi putem lua un bin mai mare si sa-l splituim
 		bin_index = get_closest_bin_type(size);
-		printf("block.c: asking for %zd size, index is %d\n", size, bin_index);	
 		if(bin_index < 0) // nu exista literalmente niciun bin pe care-l putem lua
 			return NULL;
 		bin_block = pseudo_bins[bin_index];
+		printf("block.c: asking for %zd size, bin size is %zd\n", size, pseudo_bins[bin_index]->size);
 		printf("block.c: if exec halts here, possible bug in split_block\n");
 		bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
@@ -92,7 +92,6 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	d_block* newblock = (d_block*)((void*)block + aligned_size(sizeof(d_block) + size));
 	printf("block.c: if exec halts here, newblock is bugged\n");
 	newblock->size = aligned_size(block->size - size - sizeof(d_block));
-	printf("bruh\n");
 	newblock->free = 1;
 	if(block->last)
 	{	// split pe ultimu bloc creeaza un nou ultim bloc
@@ -100,8 +99,10 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 		newblock->last = 1;
 	}
 	int bin_index = get_bin_type(newblock->size);
+	printf("block.c: bin index is %d\n", bin_index);
 	if(pseudo_bins[bin_index])
 	{	// pastrez structura de lista dublu inlantuita circulara si adaug bloc-ul la final
+		printf("block.c: adding to queue\n");
 		pseudo_bins[bin_index]->prev->next = newblock;
 		newblock->next = pseudo_bins[bin_index];
 		newblock->prev = pseudo_bins[bin_index]->prev;
@@ -109,6 +110,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	}
 	else
 	{
+		printf("block.c: new bin\n");
 		pseudo_bins[bin_index] = newblock;
 		newblock->prev = newblock->next = newblock;
 	}
