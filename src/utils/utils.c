@@ -14,6 +14,7 @@ closest_page_size(size_t size)
 int
 get_bin_type(size_t size)
 {
+	printf("utils.c: checking size is %zd\n", size);
 	// se presupune ca e dat un size care incape intr-un bin
 	int index = (size / 8) - 1;
 	if(index <= 63) // small bins
@@ -46,5 +47,5 @@ aligned_size(size_t size)
 {
 // momentant fac alinierea la 8 bytes
 	size_t align = 8;
-	return (size + align) & ~(align-1);
+	return (size + align - 1) & ~(align-1);
 }

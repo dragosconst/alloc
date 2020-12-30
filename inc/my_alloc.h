@@ -33,8 +33,8 @@ typedef struct my_block {
 	struct my_block* prev;
 	struct my_block* next;
 	size_t           size;
-	int		  free;
-	int 		  last; // daca e ultimul de pe heap-ul sau
+	int		  		 free;
+	int 		 	 last; // daca e ultimul de pe heap-ul sau
 }d_block;
 
 extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul

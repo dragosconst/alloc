@@ -11,11 +11,13 @@ my_free(void* ptr)
 		return;
 
 	d_block* block = (void*)ptr - sizeof(d_block);
+	printf("free.c: going into add validation\n");
 	if(!is_valid_addr(block))
 	{
 		printf("free pe valori non-freeable %p\n", block);
 		return;
 	}
+	printf("passed validation\n");
 	block->free = 1;
 	// block urile imense trebuie date inapoi la sistem
 	if(block->size > VBIG_BLOCK_SIZE * 2)
@@ -23,6 +25,7 @@ my_free(void* ptr)
 		free_heap_to_os(block);
 		return;
 	}
+	printf("free.c: before merging\n");
 	// merging
 	d_block* prev_block = get_prev_block(block);
 	d_block* next_block = get_next_block(block);
@@ -34,7 +37,7 @@ my_free(void* ptr)
 	{
 		block = merge_blocks(block, next_block);
 	}
-
+	printf("free.c: got past merges\n");
 	if(block->last && block->size > 3 * getpagesize())
 	{	// 3 * pagesize nu e tocmai un nr mare, dar l am ales arbitrar ca sa pot testa usor daca elibereaza catre OS
 		free_some_to_os(block);

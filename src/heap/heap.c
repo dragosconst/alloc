@@ -47,12 +47,13 @@ create_heap(size_t size)
 	}
 	d_block* all_heap = (void*)heap + sizeof(d_heap);
 	all_heap->size = align_size;
-	printf("new heap size is %ld\n", all_heap->size);
+	printf("heap.c: new heap size is %ld\n", all_heap->size);
 	all_heap->free = 1;
 	all_heap->last = 1;
 
 	// acum, sa il bagam in bin-ul corespunzator (daca incape intr-un bin)
-	int bin_index = get_bin_type(size);
+	int bin_index = get_bin_type(all_heap->size);
+	printf("heap.c: placing in %d bin\n", bin_index);
 	if(bin_index >= 0 && !pseudo_bins[bin_index])
 	{
 		pseudo_bins[bin_index] = all_heap;

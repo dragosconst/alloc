@@ -38,12 +38,14 @@ search_for_free_block(size_t size)
 		return NULL;
 
 	size = aligned_size(size); // alinierea ma ajuta mai ales la implementarea binsurilor
+	printf("block.c: asking for bin...\n");
 	int bin_index = get_bin_type(size);
 	d_block* bin_block = pseudo_bins[bin_index];
 	if(!bin_block)
 	{
 		// poate totusi putem lua un bin mai mare si sa-l splituim
 		bin_index = get_closest_bin_type(size);
+		printf("block.c: asking for %zd size, index is %d\n", size, bin_index);	
 		if(bin_index < 0) // nu exista literalmente niciun bin pe care-l putem lua
 			return NULL;
 		bin_block = pseudo_bins[bin_index];
