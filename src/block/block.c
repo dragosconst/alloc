@@ -12,87 +12,100 @@
 #include "my_alloc.h"
 
 d_block*
-append_block(size_t size, d_heap* heap)
+find_best_fit(size_t size, d_block* bin_start)
 {
-	d_block* traverse = (d_block*)(heap + 1);
-	size_t total_unusable_space = 0; // ii zic unusable space pt ca nu e neaparat spatiu folosit, dar daca e gol, e sigur prea mic pt size-ul pe care il cerem
-	while(traverse->next)
+	d_block* old = bin_start;
+	d_block* best;
+	size_t closest_fit = size;
+	do
 	{
-		traverse = traverse->next;
-		total_unusable_space += traverse->size + sizeof(d_block);
-	}
+		if(abs(bin_start->size - size) < closest_fit)
+		{
+			closest_fit = abs(bin_start->size - size);
+			best = bin_start;
+		}
+		bin_start = bin_start->next;
+	}while(old != bin_start);
 
-	// acum in traverse e ultimul bloc alocat din heap
-	if(traverse->size == 0) // daca avem un heap gol, deoarece mmap pune zero pe tot heap-ul in afara de metadate, si pt ca un malloc de 0 returneaza NULL, asa stim garantat ca daca size e 0 inseamna ca toata structura e 0
-	{
-		d_block* newblock = (d_block*)(heap + 1);
-		//printf("am lipit la pozitia %p\n", newblock);
-		newblock->prev = NULL;
-		newblock->next = NULL;
-		newblock->size = size;
-		newblock->free = 0;
-		// modify heap
-		heap->free_end_size -= sizeof(d_block) + size;
-		return newblock;
-	}
-	else
-	{
-		total_unusable_space += traverse->size; // pt ca while-ul se opreste la ultimu block, nu-i adauga niciodata size-ul in while
-		// trebuie verificat manual daca avem spatiu in coada la final
-		if(heap->all_size - total_unusable_space - sizeof(d_block) < size)
-			return NULL;
-		d_block* newblock = (d_block*)((void*)traverse + sizeof(d_block) + traverse->size);
-		newblock->prev = traverse;
-		newblock->next = NULL;
-		traverse->next = newblock;
-		newblock->size = size;
-		newblock->free = 0;
-		// modify heap
-		heap->free_end_size -= sizeof(d_block) + size;
-		return newblock;
-	}
+	return best;
 }
 
 d_block*
-search_for_free_block(size_t size, d_heap* heap)
+search_for_free_block(size_t size)
 {
-	// se presupune ca heap-ul actual are destul spatiu ca sa salvam blocul pe el
-	// desigur, asta nu inseamna neaparat ca exista un bloc free destul de mare, poate
-	// avem la final spatiul (sau poate heap-ul trebuie defragmentat)
-	d_block* traverse = (d_block*)(heap + 1);
-	while(traverse)
+	// ne uitam daca e prea mare sa aiba ce cauta in bins first of all
+	if(size > VBIG_BLOCK_SIZE * 2) // adica nu e in niciun tip de bin
+		return NULL;
+
+	size = aligned_size(size); // alinierea ma ajuta mai ales la implementarea binsurilor
+	int bin_index = get_bin_type(size);
+	d_block* bin_block = pseudo_bins[bin_index];
+	if(!bin_block)
 	{
-		if(traverse->free && traverse->size >= size)
+		// poate totusi putem lua un bin mai mare si sa-l splituim
+		bin_index = get_closest_bin_type(size);
+		if(bin_index < 0) // nu exista literalmente niciun bin pe care-l putem lua
+			return NULL;
+		bin_block = pseudo_bins[bin_index];
+		bin_block = split_block(size, bin_block);
+		bin_block->free = 0;
+
+		if(bin_block->prev != bin_block)
 		{
-			if(traverse->size > size)
-			{
-				size_t old_size = traverse->size;
-				traverse = split_block(size, traverse);
-				if(old_size == heap->biggest_fblock)
-					heap->biggest_fblock = find_biggest_free_block(heap);
-			}
-			traverse->free = 0;
-			return traverse;
+			bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
+			bin_block->next->prev = bin_block->prev;
+			pseudo_bins[bin_index] = bin_block->next;
 		}
-		traverse = traverse->next;
+		else pseudo_bins[bin_index] = NULL;
+		return bin_block;
 	}
-	return NULL;// nu avem niciun free block destul de mare
+	bin_block->free = 0;
+	if(size >= BIG_BLOCK_SIZE / 2)
+	{	// la large bins trebuie facut si un split
+		bin_block = find_best_fit(size, bin_block);
+		bin_block = split_block(size, bin_block);
+	}
+
+	if(bin_block->prev != bin_block)
+	{
+		bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
+		bin_block->next->prev = bin_block->prev;
+		if(bin_block == pseudo_bins[bin_index]) // la large bins e posibil sa fie altundeva block ul gasit
+			 pseudo_bins[bin_index] = bin_block->next;
+	}
+	else pseudo_bins[bin_index] = NULL;
+	return bin_block;
 }
 
 d_block*
 split_block(size_t size, d_block* block) // nu modifica campul free din block-ul initial
 {
-	if(block->size - size <= sizeof(d_block)) // daca spatiul in plus e prea mic sa mai bagam metadate
+	if(aligned_size(block->size - size) < aligned_size(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
-	d_block* newblock = (d_block*)((void*)block + sizeof(d_block) + size);
-	newblock->size = block->size - size - sizeof(d_block);
+	d_block* newblock = (d_block*)((void*)block + aligned_size(sizeof(d_block) + size));
+	newblock->size = aligned_size(block->size - size - sizeof(d_block));
 	newblock->free = 1;
-	newblock->prev = block;
-	newblock->next = block->next;
-	// trebuie scos din free size ul heap-ului spatiul ocupat de metadatele blocului nou
+	if(block->last)
+	{	// split pe ultimu bloc creeaza un nou ultim bloc
+		block->last = 0;
+		newblock->last = 1;
+	}
+	int bin_index = get_bin_type(newblock->size);
+	if(pseudo_bins[bin_index])
+	{	// pastrez structura de lista dublu inlantuita circulara si adaug bloc-ul la final
+		pseudo_bins[bin_index]->prev->next = newblock;
+		newblock->next = pseudo_bins[bin_index];
+		newblock->prev = pseudo_bins[bin_index]->prev;
+		pseudo_bins[bin_index]->prev = newblock;
+	}
+	else
+	{
+		pseudo_bins[bin_index] = newblock;
+		newblock->prev = newblock->next = newblock;
+	}
 	block->size = size;
-	block->next = newblock;
+	// size vine gata aliniat
 	return block;
 }

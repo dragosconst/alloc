@@ -10,3 +10,41 @@ closest_page_size(size_t size)
 {
 	return (size % getpagesize() == 0 ? size : getpagesize() * (size / getpagesize() + 1));
 }
+
+int
+get_bin_type(size_t size)
+{
+	// se presupune ca e dat un size care incape intr-un bin
+	int index = (size / 8) - 1;
+	if(index <= 63) // small bins
+		return index;
+	if(size >= BIG_BLOCK_SIZE / 2 && size  <= BIG_BLOCK_SIZE * 2)
+		return 64; // stiu ca e magic number, dar din moment ce am doar 2 large bins, nu cred ca e o problema asa mare
+	else if(size >= VBIG_BLOCK_SIZE / 2 && size <= VBIG_BLOCK_SIZE * 2)
+		return 65;
+	else
+	{
+		printf("parametru size trimis in get bin type prost?\n");
+		return -1;
+	}
+}
+
+int
+get_closest_bin_type(size_t size)
+{
+	int index = (size / 8) - 1;
+	if(index > 63)
+		index = 64;
+	for(int i = index; i < 66; ++i)
+		if(pseudo_bins[i] != NULL)
+			return i;
+	return -1;
+}
+
+size_t
+aligned_size(size_t size)
+{
+// momentant fac alinierea la 8 bytes
+	size_t align = 8;
+	return (size + align) & ~(align-1);
+}

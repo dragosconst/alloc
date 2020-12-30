@@ -3,72 +3,29 @@
 void*
 my_alloc(size_t size)
 {
+	if(!bins_initialized)
+	{	// n am gasit o metoda mai desteapta sa initializez bins
+		for(int i = 0; i < 66; ++i)
+			pseudo_bins[i] = NULL;
+		bins_initialized = 1;
+	}
 	if(size <= 0)
 		return NULL;
 
 	d_heap* heap;
 	d_block* block;
-	if(!heap_top)
+	//printf("asking for %ld space\n", size);
+	block = search_for_free_block(size); // functia asta cauta exclusiv in bins
+	if(!block)
 	{
 		heap = create_heap(size);
-		if(heap == NULL)
-		{
-			return NULL;
-		}
-		heap->next = NULL;
-		heap->prev = NULL;
-		heap_top = heap;
-
-		block = append_block(size, heap);
+		block = search_for_free_block(size);
 		if(!block)
-		{
-			printf("unpsecified error");
-			return NULL;
+		{	// asta inseamna ca e prea mare sa poata fi alocat pe bins, deci heap-ul tocmai creat e alocat special doar pt el
+			block = (d_block*)(heap + 1);
+			printf("large request of %ld\n", size);
 		}
-		//printf("heap %p has %ld left\n", heap, heap->free_end_size);
-		//printf("am alocat la pozitia: %p", block);
-		return (block + 1);
 	}
-	else
-	{
-		//printf("asking for %ld space\n", size);
-		heap = search_for_free_heap(size);
-		if(heap)
-		{
-			block = search_for_free_block(size, heap);
-			if(!block)
-			{
-				block = append_block(size, heap);
-			}
-			if(!block) // eroare de fragmentare; normal, nu ar trebui sa ajunga niciodata aici, biggest_fblock previne situatii de genu
-			{
-				printf("eroare de fragmentare!\n");
-				return NULL;
-			}
-			return (block + 1);
-		}
-		else
-		{
-			//printf("no suitable heap found\n");
-			heap = create_heap(size);
-			if(heap == NULL)
-			{
-				printf("heap error in malloc");
-				return NULL;
-			}
-			// heap top swap
-			heap_top->next = heap;
-			heap->prev = heap_top;
-			heap->next = NULL;
-			heap_top = heap;
+	return (block + 1);
 
-			block = append_block(size, heap);
-			if(!block)
-			{
-				printf("unpsecified error\n");
-				return NULL;
-			}
-			return (block + 1);
-		}
-	}
 }

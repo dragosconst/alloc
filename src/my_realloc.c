@@ -11,6 +11,7 @@
 void*
 my_realloc(void* ptr, size_t newsize)
 {
+	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
 		return my_alloc(newsize);
 
@@ -28,32 +29,31 @@ my_realloc(void* ptr, size_t newsize)
 	else // trebuie sa cautam undeva
 	{
 		// mai intai ma uit daca blocul dupa el e liber si destul de mare
-		size_t remainder_size = newsize - block->size;
-		d_block* next_block = block->next;
-		d_heap* heap = get_heap_of_block(block);
-		if(next_block && next_block->free && next_block->size + sizeof(d_block) >= remainder_size)
-		{	// adica, daca putem lua blocul urmator si sa-l lipim de asta
-			block = merge_blocks(block, next_block);
-			block = split_block(newsize, block);
-			return (block + 1);
+		size_t extra_size = newsize - block->size;
+		if(!block->last)
+		{
+			d_block* next_block = (d_block*)((void*)block + block->size);
+			if(next_block->free)
+			{
+				if(next_block->size >= extra_size)
+				{
+					next_block = split_block(extra_size, next_block);
+					block->size += next_block->size + sizeof(d_block);
+					if(next_block->last)// daca in urma splitului nu s a intamplat nimic cu next block
+						block->last = 1;
+					return (block + 1);
+				}
+			}
 		}
-		else if(next_block == NULL && heap->free_end_size >= remainder_size)
-		{	// daca avem in coada heap-ului spatiu nealocat destul
-			block->size = newsize; // il luam pur si simplu
-			heap->free_end_size -= remainder_size;
-			return (block + 1);
-		}
-		else
-		{	// trebuie cautat altundeva spatiu
-			size_t copy_for = block->size;
-			void* data = block + 1; // atentie la multi-threading, nu vrem sa ne corupa cineva datele de aici
-			my_free(data);
+		// trebuie cautat altundeva spatiu
+		size_t copy_for = block->size;
+		void* data = block + 1; // atentie la multi-threading, nu vrem sa ne corupa cineva datele de aici
+		my_free(data);
 
-			void* new_add = my_alloc(newsize);
-			d_block* to_move = new_add - sizeof(d_block);
-			memcpy(new_add, data, copy_for);
+		void* new_add = my_alloc(newsize);
+		d_block* to_move = new_add - sizeof(d_block);
+		memcpy(new_add, data, copy_for);
 
-			return (to_move + 1);
-		}
+		return (to_move + 1);
 	}
 }
