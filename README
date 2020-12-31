@@ -1,2 +1,6 @@
 compile order (momentan):
 compile_first.c -> utils.c -> heap.c -> block.c -> my_alloc.c -> heap_free.c -> block_free.c -> my_free.c -> my_calloc.c -> my_realloc.c
+
+known bugs:
+- split pe arhitecturi pe care sizeof(d_block) mod 8 != 0 va pierde sizeof(d_block) mod 8 bytes pe fiecare apel. prin pierde ma refer ca efectiv aia 7 bytes o sa fie ignorati complet de malloc, dar user-ul nu ar trebui sa observe vreo diferenta
+- aceiasi problema apare la merge, ultimii sizeof(d_block) mod 8 bytes sunt ignorati

@@ -93,11 +93,13 @@ merge_blocks(d_block* bl, d_block* br)
 	// ordinea argumentelor e importanta, ca sa fie mai usoara implementarea
 	// de observat ca e mostenita valoarea de free din bl, evident se presupune ca e free si bl, si br
 	printf("block_free.c: merging block of size %zd with block of size %zd\n", bl->size, br->size);
-	bl->size += sizeof(d_block) + br->size;
+	bl->size += sizeof(d_block) + br->size - BLOCK_OFFSET; // scadem block offset ca sa ramanem garantat cu un size multiplu de 8
 	if(bl->size % 8) // logic nu ar trebui sa ajunga pe cazul asta niciodata
-		printf("weird size %ld\n", bl->size);
+		printf("block_free.c: failed size calculation %ld\n", bl->size);
+
 	if(br->last)
 		bl->last = 1;
+
 	// br trebuie scos din bin_ul sau, de bl se ocupa ala care a apelat functia
 	if(br->next == br) // e singur in bin
 	{

@@ -63,6 +63,7 @@ search_for_free_block(size_t size)
 		printf("block.c: request granted\n");
 		return bin_block;
 	}
+
 	bin_block->free = 0;
 	if(size >= BIG_BLOCK_SIZE / 2)
 	{	// la large bins trebuie facut si un split
@@ -85,21 +86,35 @@ d_block*
 split_block(size_t size, d_block* block) // nu modifica campul free din block-ul initial
 {
 	// size has to be aligned
-	if(block->size - size < aligned_size(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
+	if(block->size - size < sizeof(d_block) + 8) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
-	d_block* newblock = (d_block*)((void*)block + aligned_size(sizeof(d_block) + size));
+
+	d_block* newblock = (d_block*)((void*)block + sizeof(d_block) + size);
 	printf("block.c: if exec halts here, newblock is bugged\n");
 	newblock->size = aligned_size(block->size - size - sizeof(d_block));
+	if(newblock->size > block->size - size - sizeof(d_block))
+	{	/*
+			Singurul fel in care pot ajunge in situatia asta logic ar fi daca sizeof(d_block) nu ar fi multiplu de 8.
+			Caz in care e posibil ca alinierea sa creasca size-ul noului bloc, dar eu de fapt o vreau mai mica, ca sa
+			incape in spatiul disponibil. Asta inseamna o pierdere de maxim 7 bytes pe spli, deoarece in cel mai rau
+			caz, cand nb->size mod 8 e 7, ultimii 7 bytes nu intra in size. Nu ar trebui sa afecteze functionalitatea
+			prea mult, deoarece request-urile userului vor fi garantate, iar pierderea asta e oricum dependenta de
+			arhitectura sistemului. Un sistem pe care sizeof(d_block) mod 8 e 0 nu pierde niciun byte.
+		*/
+		newblock->size -= 8; // TODO: eventual un macro in loc de 8 magic number
+	}
 	newblock->free = 1;
 	if(block->last)
 	{	// split pe ultimu bloc creeaza un nou ultim bloc
 		block->last = 0;
 		newblock->last = 1;
 	}
+
 	int bin_index = get_bin_type(newblock->size);
 	printf("block.c: bin index is %d\n", bin_index);
+	// inserare in bin
 	if(pseudo_bins[bin_index])
 	{	// pastrez structura de lista dublu inlantuita circulara si adaug bloc-ul la final
 		printf("block.c: adding to queue\n");
@@ -114,6 +129,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 		pseudo_bins[bin_index] = newblock;
 		newblock->prev = newblock->next = newblock;
 	}
+
 	block->size = size;
 	// size vine gata aliniat
 	return block;
