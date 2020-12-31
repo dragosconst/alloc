@@ -11,7 +11,7 @@ create_heap(size_t size)
 	d_heap* heap;
 	size = aligned_size(size);
 	// pt size-uri in smallbin size, putem prealoca heap
-	if(size < BIG_BLOCK_SIZE / 2)
+	if(size < BIG_BLOCK_SIZE / 4)
 	{
 		heap = mmap(NULL, 4 * getpagesize(), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 		heap->all_size = 4 * getpagesize() - sizeof(d_heap) - sizeof(d_block);

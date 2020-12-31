@@ -65,7 +65,7 @@ search_for_free_block(size_t size)
 	}
 
 	bin_block->free = 0;
-	if(size >= BIG_BLOCK_SIZE / 2)
+	if(size >= BIG_BLOCK_SIZE / 4)
 	{	// la large bins trebuie facut si un split
 		bin_block = find_best_fit(size, bin_block);
 		bin_block = split_block(size, bin_block);
@@ -94,7 +94,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	d_block* newblock = (d_block*)((void*)block + sizeof(d_block) + size);
 	printf("block.c: if exec halts here, newblock is bugged\n");
 	newblock->size = aligned_size(block->size - size - sizeof(d_block));
-	if(newblock->size > block->size - size - sizeof(d_block))
+	if(newblock->size < BIG_BLOCK_SIZE / 4 && newblock->size > block->size - size - sizeof(d_block))
 	{	/*
 			Singurul fel in care pot ajunge in situatia asta logic ar fi daca sizeof(d_block) nu ar fi multiplu de 8.
 			Caz in care e posibil ca alinierea sa creasca size-ul noului bloc, dar eu de fapt o vreau mai mica, ca sa
@@ -102,6 +102,8 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 			caz, cand nb->size mod 8 e 7, ultimii 7 bytes nu intra in size. Nu ar trebui sa afecteze functionalitatea
 			prea mult, deoarece request-urile userului vor fi garantate, iar pierderea asta e oricum dependenta de
 			arhitectura sistemului. Un sistem pe care sizeof(d_block) mod 8 e 0 nu pierde niciun byte.
+			Oricum, pentru valori din large bins, nu ne intereseaza sa pastram un multiplu fix de 8, deci pierderea se
+			va face doar pe valori <512 bytes.
 		*/
 		newblock->size -= 8; // TODO: eventual un macro in loc de 8 magic number
 	}

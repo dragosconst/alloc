@@ -19,7 +19,7 @@ get_bin_type(size_t size)
 	int index = (size / 8) - 1;
 	if(index <= 63) // small bins
 		return index;
-	if(size >= BIG_BLOCK_SIZE / 2 && size  <= BIG_BLOCK_SIZE * 2)
+	if(size >= BIG_BLOCK_SIZE / 4 && size  <= BIG_BLOCK_SIZE * 2)
 		return 64; // stiu ca e magic number, dar din moment ce am doar 2 large bins, nu cred ca e o problema asa mare
 	else if(size >= VBIG_BLOCK_SIZE / 4 && size <= VBIG_BLOCK_SIZE * 2)
 		return 65;
