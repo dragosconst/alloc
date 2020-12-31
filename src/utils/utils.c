@@ -14,14 +14,14 @@ closest_page_size(size_t size)
 int
 get_bin_type(size_t size)
 {
-	printf("utils.c: checking size is %zd\n", size);
+	printf("utils.c: checking size is %zd max size is %zd\n", size);
 	// se presupune ca e dat un size care incape intr-un bin
 	int index = (size / 8) - 1;
 	if(index <= 63) // small bins
 		return index;
 	if(size >= BIG_BLOCK_SIZE / 2 && size  <= BIG_BLOCK_SIZE * 2)
 		return 64; // stiu ca e magic number, dar din moment ce am doar 2 large bins, nu cred ca e o problema asa mare
-	else if(size >= VBIG_BLOCK_SIZE / 2 && size <= VBIG_BLOCK_SIZE * 2)
+	else if(size >= VBIG_BLOCK_SIZE / 4 && size <= VBIG_BLOCK_SIZE * 2)
 		return 65;
 	else
 	{

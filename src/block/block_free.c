@@ -19,7 +19,6 @@ is_valid_addr(void* addr) // verific daca exista vreun bloc cu adresa data de us
 				return 1;
 			if(block->last)
 				break;
-			printf("block_free.c: val in last e %d\n", block->last);
 			block = (d_block*)((void*)block + sizeof(d_block) + block->size);
 		}
 		heap = heap->prev;
@@ -43,7 +42,6 @@ get_heap_of_block(d_block* block)
 				return heap;
 			if(_block->last)
 				break;
-			printf("_block is %zd size is %zd\n", _block, _block->size);
 			_block = (d_block*)((void*)_block + sizeof(d_block) + _block->size);
 		}
 		heap = heap->prev;
@@ -59,7 +57,7 @@ get_prev_block(d_block* block)
 	if(traverse == block) return NULL; // nu ne intereseaza daca e primu block
 	while((d_block*)((void*)traverse + sizeof(d_block) + traverse->size) != block)
 	{
-		printf("block_free.c: traverse is %zd block is %zd\n", traverse, block);
+		//printf("block_free.c: traverse is %zd block is %zd\n", traverse, block);
 		traverse = (d_block*)((void*)traverse + sizeof(d_block) + traverse->size);
 	}
 	// acum, traverse e blocul fix dinainte
