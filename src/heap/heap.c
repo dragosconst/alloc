@@ -32,6 +32,7 @@ create_heap(size_t size)
 	{
 		heap->next = heap_top->next;
 		heap->prev = heap_top;
+		heap_top->next->prev = heap;
 		heap_top->next = heap;
 		heap_top = heap;
 	}

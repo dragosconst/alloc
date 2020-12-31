@@ -11,19 +11,39 @@
 void*
 my_realloc(void* ptr, size_t newsize)
 {
+	/*
+		Pentru MT: vreau ca block-ul trimis sa fie protejat de
+		mutex pana cand ii gasesc spatiu sau ii dau free.
+		De asemenea, am nevoie sa evit lock-urile pe malloc si
+		free (pt ca oricum realloc in sine e atomic), deci fol
+		flag-ul MALLOC_ATOMIC ca sa ma asigur ca free si malloc
+		nu dau aiurea lock la un mutex deja lock-uit de thread.
+	*/
+	pthread_mutex_lock(&global_mutex);
+	MALLOC_ATOMIC = 0;
+
 	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
+	{
+		MALLOC_ATOMIC = 1;
+		pthread_mutex_unlock(&global_mutex);
 		return my_alloc(newsize);
+	}
 
-	d_block* block = ptr - sizeof(d_block);
+	d_block* block = (d_block*)((char*)ptr - sizeof(d_block));
 	if(!is_valid_addr(block))
 	{
 		printf("realloc pe pointer invalid!\n");
+		MALLOC_ATOMIC = 1;
+		pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
 	if(newsize <= block->size) // pe cazul in care vrem sa shrinkuim blocul
 	{
+		printf("realloc.c: block has size %ld\n", block->size);
 		block = split_block(newsize, block);
+		MALLOC_ATOMIC = 1;
+		pthread_mutex_unlock(&global_mutex);
 		return (block + 1);
 	}
 	else // trebuie sa cautam undeva
@@ -33,27 +53,37 @@ my_realloc(void* ptr, size_t newsize)
 		if(!block->last)
 		{
 			d_block* next_block = (d_block*)((void*)block + block->size);
-			if(next_block->free)
+			if(!is_valid_addr(next_block))
+				printf("you fed up \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ /n");
+			if(is_valid_addr(next_block) && next_block->free)
 			{
 				if(next_block->size >= extra_size)
 				{
+
 					next_block = split_block(extra_size, next_block);
 					block->size += next_block->size + sizeof(d_block);
 					if(next_block->last)// daca in urma splitului nu s a intamplat nimic cu next block
 						block->last = 1;
+
+					MALLOC_ATOMIC = 1;
+					pthread_mutex_unlock(&global_mutex);
 					return (block + 1);
 				}
 			}
 		}
 		// trebuie cautat altundeva spatiu
+		printf("getting real close to finishing realloc\n");
 		size_t copy_for = block->size;
-		void* data = block + 1; // atentie la multi-threading, nu vrem sa ne corupa cineva datele de aici
+		void* data = block + 1;
 		my_free(data);
 
 		void* new_add = my_alloc(newsize);
 		d_block* to_move = new_add - sizeof(d_block);
+		printf("realloc almost done\n");
 		memcpy(new_add, data, copy_for);
 
+		MALLOC_ATOMIC = 1;
+		pthread_mutex_unlock(&global_mutex);
 		return (to_move + 1);
 	}
 }

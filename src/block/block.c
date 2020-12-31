@@ -15,16 +15,21 @@ d_block*
 find_best_fit(size_t size, d_block* bin_start)
 {
 	d_block* old = bin_start;
-	d_block* best;
-	size_t closest_fit = size;
+	d_block* best = NULL;
+	ssize_t closest_fit = VBIG_BLOCK_SIZE * 2;
+	printf("closest fit is %zd differance is %zd\n", closest_fit,  (ssize_t)bin_start->size - (ssize_t)size);
+	printf("stuck in find_best_fit\n");
+	printf("old is %p old->next %p old->prev %p\n", old, old->next, old->prev);
 	do
 	{
-		if(abs(bin_start->size - size) < closest_fit)
+		if((ssize_t)bin_start->size - (ssize_t)size > 0 && (ssize_t)bin_start->size - (ssize_t)size < closest_fit)
 		{
-			closest_fit = abs(bin_start->size - size);
+			printf("val is %zd and abs is %zd\n", (ssize_t)bin_start->size - (ssize_t)size, abs_big((ssize_t)bin_start->size - (ssize_t)size));
+			closest_fit = bin_start->size - size;
 			best = bin_start;
 		}
 		bin_start = bin_start->next;
+		//printf("bin start is %p, but old is %p\n", bin_start, old);
 	}while(old != bin_start);
 
 	return best;
@@ -38,18 +43,30 @@ search_for_free_block(size_t size)
 		return NULL;
 
 	size = aligned_size(size); // alinierea ma ajuta mai ales la implementarea binsurilor
-	printf("block.c: asking for bin...\n");
 	int bin_index = get_bin_type(size);
 	d_block* bin_block = pseudo_bins[bin_index];
+	printf("block.c: asking for bin %d...\n", bin_index);
+
+	if(bin_block && size >= BIG_BLOCK_SIZE / 4)
+	{	// la large bins trebuie facut si un split si un search mai comprehensiv
+		bin_block = find_best_fit(size, bin_block);
+		printf("im splittin stuff\n");
+		if(bin_block)	// e posibil ca find best fit sa dea fail
+			bin_block = split_block(size, bin_block);
+		else
+			printf("actually nah im not\n");
+	}
 	if(!bin_block)
 	{
 		// poate totusi putem lua un bin mai mare si sa-l splituim
 		bin_index = get_closest_bin_type(size);
 		if(bin_index < 0) // nu exista literalmente niciun bin pe care-l putem lua
 			return NULL;
-		bin_block = pseudo_bins[bin_index];
+		if(bin_index <= 63)
+			bin_block = pseudo_bins[bin_index];
+		else
+			bin_block = find_best_fit(size, pseudo_bins[bin_index]);
 		printf("block.c: asking for %zd size, bin size is %zd\n", size, pseudo_bins[bin_index]->size);
-		printf("block.c: if exec halts here, possible bug in split_block\n");
 		bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
 
@@ -57,19 +74,16 @@ search_for_free_block(size_t size)
 		{
 			bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
 			bin_block->next->prev = bin_block->prev;
-			pseudo_bins[bin_index] = bin_block->next;
+			if(bin_block == pseudo_bins[bin_index])
+				pseudo_bins[bin_index] = bin_block->next;
 		}
 		else pseudo_bins[bin_index] = NULL;
 		printf("block.c: request granted\n");
+		bin_block->next = bin_block->free = NULL;
 		return bin_block;
 	}
 
 	bin_block->free = 0;
-	if(size >= BIG_BLOCK_SIZE / 4)
-	{	// la large bins trebuie facut si un split
-		bin_block = find_best_fit(size, bin_block);
-		bin_block = split_block(size, bin_block);
-	}
 
 	if(bin_block->prev != bin_block)
 	{
@@ -79,6 +93,7 @@ search_for_free_block(size_t size)
 			 pseudo_bins[bin_index] = bin_block->next;
 	}
 	else pseudo_bins[bin_index] = NULL;
+	bin_block->next = bin_block->free = NULL;
 	return bin_block;
 }
 
@@ -86,14 +101,18 @@ d_block*
 split_block(size_t size, d_block* block) // nu modifica campul free din block-ul initial
 {
 	// size has to be aligned
-	if(block->size - size < sizeof(d_block) + 8) // daca spatiul in plus e prea mic sa mai bagam metadate
+	printf("ooooh im splitting\n");
+	if((ssize_t)block->size - (ssize_t)size < (ssize_t)(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
+	printf("no split req %zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
+
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
-
+	printf("%zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
 	d_block* newblock = (d_block*)((void*)block + sizeof(d_block) + size);
-	printf("block.c: if exec halts here, newblock is bugged\n");
+	printf("newblock acces incoming, old block has %zd size versus req of %zd\n", block->size, size);
 	newblock->size = aligned_size(block->size - size - sizeof(d_block));
+	printf("newblock acces success\n");
 	if(newblock->size < BIG_BLOCK_SIZE / 4 && newblock->size > block->size - size - sizeof(d_block))
 	{	/*
 			Singurul fel in care pot ajunge in situatia asta logic ar fi daca sizeof(d_block) nu ar fi multiplu de 8.
@@ -115,11 +134,11 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	}
 
 	int bin_index = get_bin_type(newblock->size);
-	printf("block.c: bin index is %d\n", bin_index);
+	//printf("block.c: bin index is %d\n", bin_index);
 	// inserare in bin
 	if(pseudo_bins[bin_index])
 	{	// pastrez structura de lista dublu inlantuita circulara si adaug bloc-ul la final
-		printf("block.c: adding to queue\n");
+		//printf("block.c: adding to queue\n");
 		pseudo_bins[bin_index]->prev->next = newblock;
 		newblock->next = pseudo_bins[bin_index];
 		newblock->prev = pseudo_bins[bin_index]->prev;
@@ -127,7 +146,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	}
 	else
 	{
-		printf("block.c: new bin\n");
+		//printf("block.c: new bin\n");
 		pseudo_bins[bin_index] = newblock;
 		newblock->prev = newblock->next = newblock;
 	}
@@ -136,3 +155,4 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	// size vine gata aliniat
 	return block;
 }
+

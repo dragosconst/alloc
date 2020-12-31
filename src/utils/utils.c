@@ -11,10 +11,16 @@ closest_page_size(size_t size)
 	return (size % getpagesize() == 0 ? size : getpagesize() * (size / getpagesize() + 1));
 }
 
+ssize_t
+abs_big(ssize_t arg)
+{
+	return arg > 0 ? arg : -arg;
+}
+
 int
 get_bin_type(size_t size)
 {
-	printf("utils.c: checking size is %zd max size is %zd\n", size);
+	//printf("utils.c: checking size is %zd max size is %zd\n", size);
 	// se presupune ca e dat un size care incape intr-un bin
 	int index = (size / 8) - 1;
 	if(index <= 63) // small bins
@@ -35,9 +41,29 @@ get_closest_bin_type(size_t size)
 {
 	int index = (size / 8) - 1;
 	if(index > 63)
-	{
-		if(size <= BIG_BLOCK_SIZE * 2 && pseudo_bins[64]) return 64;
-		if(size <= VBIG_BLOCK_SIZE * 2 && pseudo_bins[65]) return 65;
+	{	// pe large bins trebuie sa caut efectiv daca exista o valoare suitable
+		if(size <= BIG_BLOCK_SIZE * 2 && pseudo_bins[64])
+		{
+			d_block* bin = pseudo_bins[64];
+			d_block* old = bin;
+			do
+			{
+				if(bin->size >= size)
+					return 64;
+				bin = bin->next;
+			}while(old != bin);
+		}
+		if(size <= VBIG_BLOCK_SIZE * 2 && pseudo_bins[65])
+		{
+			d_block* bin = pseudo_bins[65];
+			d_block* old = bin;
+			do
+			{
+				if(bin->size >= size)
+					return 65;
+				bin = bin->next;
+			}while(old != bin);
+		}
 		return -1;
 	}
 	for(int i = index; i < 66; ++i)

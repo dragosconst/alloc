@@ -7,28 +7,43 @@
 void
 my_free(void* ptr)
 {
+	if(MALLOC_ATOMIC)
+		pthread_mutex_lock(&global_mutex); // nimeni nu tre sa se atinga de block pana free nu e gata
 	if(!ptr || !heap_top)
+	{
+		if(MALLOC_ATOMIC)
+			pthread_mutex_unlock(&global_mutex);
 		return;
+	}
 
-	d_block* block = (void*)ptr - sizeof(d_block);
-	printf("free.c: going into add validation\n");
+	d_block* block = (d_block*)((char*)ptr - sizeof(d_block));
+	//printf("free.c: going into add validation\n");
 	if(!is_valid_addr(block))
 	{
 		printf("free pe valori non-freeable %p\n", block);
+		while(1) printf("b");
+		if(MALLOC_ATOMIC)
+			pthread_mutex_unlock(&global_mutex);
 		return;
 	}
-	printf("passed validation\n");
+	//printf("passed validation\n");
 	block->free = 1;
 	// block urile imense trebuie date inapoi la sistem
 	if(block->size > VBIG_BLOCK_SIZE * 2)
 	{
 		free_heap_to_os(block);
+		if(MALLOC_ATOMIC)
+			pthread_mutex_unlock(&global_mutex);
 		return;
 	}
-	printf("free.c: before merging, size is %zd\n", block->size);
+	//printf("free.c: before merging, size is %zd\n", block->size);
 	// merging
 	d_block* prev_block = get_prev_block(block);
+	if(prev_block && !is_valid_addr(prev_block))
+		printf("ceva e busit grav\n");
 	d_block* next_block = get_next_block(block);
+	if(next_block && !is_valid_addr(next_block))
+		printf("ceva chiar e busit grav next\n");
 	if(prev_block) // blocul de dinainte era free
 	{
 		block = merge_blocks(prev_block, block);
@@ -48,11 +63,19 @@ my_free(void* ptr)
 	int bin_index = get_bin_type(block->size);
 	// TODO: sorting pe large bins
 	if(!pseudo_bins[bin_index])
+	{
 		pseudo_bins[bin_index] = block;
-	d_block* bin_first = pseudo_bins[bin_index];
-	bin_first->prev->next = block;
-	block->next = bin_first;
-	block->prev = bin_first->prev;
-	bin_first->prev = block;
+		block->next = block->prev = block;
+	}
+	else
+	{
+		d_block* bin_first = pseudo_bins[bin_index];
+		bin_first->prev->next = block;
+		block->next = bin_first;
+		block->prev = bin_first->prev;
+		bin_first->prev = block;
+	}
+	if(MALLOC_ATOMIC)
+		pthread_mutex_unlock(&global_mutex);
 	// no double free protection, in standard am vazut ca nu cere
 }

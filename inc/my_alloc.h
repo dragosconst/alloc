@@ -41,6 +41,7 @@ extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
 extern pthread_mutex_t global_mutex;
 extern int bins_initialized;
 extern d_block* pseudo_bins[66]; // o sa am doar 2 large bins
+extern int MALLOC_ATOMIC; // flag care indica daca vreau sau nu ca malloc si free sa foloseasca locks; useful pt realloc
 
 #define BLOCK_OFFSET sizeof(struct my_block) % 8
 #define HEAP_OFFSET  sizeof(struct my_heap) % 8
@@ -57,13 +58,10 @@ void* my_calloc(size_t count, size_t size);
 void* my_realloc(void* ptr, size_t newsize);
 
 // functii interne ale bibliotecii
-//d_heap* search_for_free_heap(size_t size);
-//int is_compatible_type(heap_type my_type, heap_type cmp_type);
 d_block* search_for_free_block(size_t size); // un heap free ori are un bloc liber, ori mai are spatiu in coada
 d_block* find_best_fit(size_t size, d_block* bin_start);
 size_t find_biggest_free_block(d_heap* heap);
 d_heap* create_heap(size_t size);
-//d_block* append_block(size_t size, d_heap* heap);
 d_block* split_block(size_t size, d_block* block);
 d_block* get_prev_block(d_block* block);
 d_block* get_next_block(d_block* block);
@@ -76,6 +74,6 @@ d_heap* get_heap_of_block(d_block* block);
 d_heap* free_some_to_os(d_block* block);
 int free_heap_to_os(d_block* block);
 d_block* merge_blocks(d_block* bl, d_block* br);
-void init();
+ssize_t abs_big(ssize_t arg);
 
 #endif //MYALLOC_INCLU
