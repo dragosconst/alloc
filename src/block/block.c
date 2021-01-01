@@ -29,7 +29,7 @@ find_best_fit(size_t size, d_block* bin_start)
 			best = bin_start;
 		}
 		bin_start = bin_start->next;
-		//printf("bin start is %p, but old is %p\n", bin_start, old);
+		printf("bin start is %p, but old is %p\n", bin_start, old);
 	}while(old != bin_start);
 
 	return best;

@@ -111,29 +111,20 @@ merge_blocks(d_block* bl, d_block* br)
 	printf("nocrash2\n");
 		printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
 	// br trebuie scos din bin_ul sau, de bl se ocupa ala care a apelat functia
-	if(pseudo_bins[get_bin_type(br->size)] == br) // e singur in bin
+	if(pseudo_bins[get_bin_type(br->size)] == br) // e primul in bin
 	{
 		printf("ramura if\n");
-		pseudo_bins[get_bin_type(br->size)] = NULL;
-		// nu e obligatoriu sa le fac NULL
-		br->next = NULL;
-		br->prev = NULL;
-		printf("if finished\n");
+		pseudo_bins[get_bin_type(br->size)] = (br->next == br ? NULL : br->next); // daca e singurul din bin, il inlocuiesc cu NULL
 	}
-	else
-	{
-		printf("ramura else\n");
-		printf("e valid? %d\n", is_valid_addr(br));
-		printf("br %p are size %zd\n", br, sizeof(br));
-		printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
-		if(br->next)
-			br->prev->next = br->next;
-		if(br->prev)
-			br->next->prev = br->prev;
-		br->next = NULL;
-		br->prev = NULL;
-		printf("else finished\n");
-	}
+	printf("br %p are size %zd\n", br, sizeof(br));
+	printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
+	if(br->prev)
+		br->prev->next = br->next;
+	if(br->next)
+		br->next->prev = br->prev;
+	// nu e obligatoriu sa le fac NULL
+	//br->next = NULL;
+	//br->prev = NULL;
 	printf("merge finished\n");
 	return bl;
 }
