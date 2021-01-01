@@ -22,7 +22,7 @@ find_best_fit(size_t size, d_block* bin_start)
 	printf("old is %p old->next %p old->prev %p\n", old, old->next, old->prev);
 	do
 	{
-		if((ssize_t)bin_start->size - (ssize_t)size > 0 && (ssize_t)bin_start->size - (ssize_t)size < closest_fit)
+		if((ssize_t)bin_start->size - (ssize_t)size >= 0 && (ssize_t)bin_start->size - (ssize_t)size < closest_fit)
 		{
 			printf("val is %zd and abs is %zd\n", (ssize_t)bin_start->size - (ssize_t)size, abs_big((ssize_t)bin_start->size - (ssize_t)size));
 			closest_fit = bin_start->size - size;

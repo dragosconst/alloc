@@ -19,17 +19,14 @@ my_alloc(size_t size)
 		return NULL;
 	}
 
-	d_heap* heap;
-	d_block* block;
-	//printf("my_alloc.c:asking for %ld space\n", size);
 	if(MALLOC_ATOMIC)
 	{
 		//printf("bruh\n");
 		pthread_mutex_lock(&global_mutex);
 	}
-	else
-		printf("HOW?????????????????????????????????????????????\n");
-	printf("im outta here cuh %d\n", MALLOC_ATOMIC);
+	d_heap* heap;
+	d_block* block;
+	//printf("my_alloc.c:asking for %ld space\n", size);
 	block = search_for_free_block(size); // functia asta cauta exclusiv in bins
 	if(!block)
 	{
