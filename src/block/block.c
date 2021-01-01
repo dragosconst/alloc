@@ -66,7 +66,7 @@ search_for_free_block(size_t size)
 			bin_block = pseudo_bins[bin_index];
 		else
 			bin_block = find_best_fit(size, pseudo_bins[bin_index]);
-		printf("block.c: asking for %zd size, bin size is %zd\n", size, pseudo_bins[bin_index]->size);
+		printf("block.c: asking for %zd size, bin size is %zd, bin index is %d\n", size, pseudo_bins[bin_index]->size, bin_index);
 		bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
 
@@ -79,7 +79,7 @@ search_for_free_block(size_t size)
 		}
 		else pseudo_bins[bin_index] = NULL;
 		printf("block.c: request granted\n");
-		bin_block->next = bin_block->free = NULL;
+		bin_block->next = bin_block->prev = NULL;
 		return bin_block;
 	}
 
@@ -93,13 +93,14 @@ search_for_free_block(size_t size)
 			 pseudo_bins[bin_index] = bin_block->next;
 	}
 	else pseudo_bins[bin_index] = NULL;
-	bin_block->next = bin_block->free = NULL;
+	bin_block->next = bin_block->prev = NULL;
 	return bin_block;
 }
 
 d_block*
 split_block(size_t size, d_block* block) // nu modifica campul free din block-ul initial
 {
+	if(!is_valid_addr(block)) printf("how did this happen\n");
 	// size has to be aligned
 	printf("ooooh im splitting\n");
 	if((ssize_t)block->size - (ssize_t)size < (ssize_t)(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
@@ -125,12 +126,18 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 			va face doar pe valori <512 bytes.
 		*/
 		newblock->size -= 8; // TODO: eventual un macro in loc de 8 magic number
+		printf("halt\n");
+		while(1);
 	}
 	newblock->free = 1;
 	if(block->last)
 	{	// split pe ultimu bloc creeaza un nou ultim bloc
 		block->last = 0;
 		newblock->last = 1;
+	}
+	else
+	{
+		newblock->last = 0;
 	}
 
 	int bin_index = get_bin_type(newblock->size);
@@ -152,6 +159,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	}
 
 	block->size = size;
+	if(!is_valid_addr(block)) printf("how did this happen\n");
 	// size vine gata aliniat
 	return block;
 }

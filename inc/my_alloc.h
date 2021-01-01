@@ -75,5 +75,6 @@ d_heap* free_some_to_os(d_block* block);
 int free_heap_to_os(d_block* block);
 d_block* merge_blocks(d_block* bl, d_block* br);
 ssize_t abs_big(ssize_t arg);
+void show_all_heaps(); // pt debugging
 
 #endif //MYALLOC_INCLU

@@ -48,6 +48,7 @@ get_closest_bin_type(size_t size)
 			d_block* old = bin;
 			do
 			{
+				printf("utils.c: bin size is %zd block's size is %zd\n", bin->size, size);
 				if(bin->size >= size)
 					return 64;
 				bin = bin->next;
@@ -59,6 +60,7 @@ get_closest_bin_type(size_t size)
 			d_block* old = bin;
 			do
 			{
+				printf("utils.c: bin size is %zd block's size is %zd\n", bin->size, size);
 				if(bin->size >= size)
 					return 65;
 				bin = bin->next;
@@ -78,4 +80,40 @@ aligned_size(size_t size)
 // momentant fac alinierea la 8 bytes
 	size_t align = 8;
 	return (size + align - 1) & ~(align-1);
+}
+
+void
+show_all_heaps()
+{
+	d_heap* heap = heap_top;
+	if(!heap)
+	{
+		printf("no heaps to show\n\n\n");
+		return;
+	}
+
+	for(int i = 0; i < 60; ++i)
+		printf("-");
+	printf("\n");
+
+	d_heap* old = heap_top;
+	do
+	{
+		printf("heap %p has following blocks: ", heap);
+		d_block* bk = (d_block*)(heap + 1);
+		int old_last = 0;
+		do
+		{
+			printf("block %p, size %ld, is last %d, is free %d -> ", bk, bk->size,bk->last, bk->free);
+			old_last = bk->last;
+			if(!bk->last)
+				bk = (d_block*)((char*)bk + sizeof(d_block) + bk->size);
+		}while(!old_last);
+		printf("nil\n");
+		heap = heap->prev;
+	}while(heap != old);
+
+	for(int i = 0; i < 60; ++i)
+		printf("-");
+	printf("\n");
 }

@@ -52,7 +52,7 @@ my_realloc(void* ptr, size_t newsize)
 		size_t extra_size = newsize - block->size;
 		if(!block->last)
 		{
-			d_block* next_block = (d_block*)((void*)block + block->size);
+			d_block* next_block = (d_block*)((void*)block + sizeof(d_block) + block->size);
 			if(!is_valid_addr(next_block))
 				printf("you fed up \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ /n");
 			if(is_valid_addr(next_block) && next_block->free)
@@ -75,6 +75,7 @@ my_realloc(void* ptr, size_t newsize)
 		printf("getting real close to finishing realloc\n");
 		size_t copy_for = block->size;
 		void* data = block + 1;
+		printf("entering free\n");
 		my_free(data);
 
 		void* new_add = my_alloc(newsize);

@@ -50,5 +50,6 @@ my_alloc(size_t size)
 		printf("bruh commenced!!!!!!!!!!!!!!!!\n");
 		pthread_mutex_unlock(&global_mutex);
 	}
+	show_all_heaps();
 	return (block + 1);
 }
