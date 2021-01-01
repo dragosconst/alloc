@@ -109,7 +109,6 @@ merge_blocks(d_block* bl, d_block* br)
 	if(br->last)
 		bl->last = 1;
 	printf("nocrash2\n");
-		printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
 	// br trebuie scos din bin_ul sau, de bl se ocupa ala care a apelat functia
 	if(pseudo_bins[get_bin_type(br->size)] == br) // e primul in bin
 	{

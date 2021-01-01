@@ -72,6 +72,7 @@ search_for_free_block(size_t size)
 
 		if(bin_block->prev != bin_block)
 		{
+			printf("bin block %p, next %p, prev %p\n", bin_block, bin_block->next, bin_block->prev);
 			bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
 			bin_block->next->prev = bin_block->prev;
 			if(bin_block == pseudo_bins[bin_index])
@@ -79,7 +80,7 @@ search_for_free_block(size_t size)
 		}
 		else pseudo_bins[bin_index] = NULL;
 		printf("block.c: request granted\n");
-		bin_block->next = bin_block->prev = NULL;
+		//bin_block->next = bin_block->prev = NULL;
 		return bin_block;
 	}
 
@@ -93,7 +94,7 @@ search_for_free_block(size_t size)
 			 pseudo_bins[bin_index] = bin_block->next;
 	}
 	else pseudo_bins[bin_index] = NULL;
-	bin_block->next = bin_block->prev = NULL;
+	//bin_block->next = bin_block->prev = NULL;
 	return bin_block;
 }
 
@@ -102,17 +103,16 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 {
 	if(!is_valid_addr(block)) printf("how did this happen\n");
 	// size has to be aligned
-	printf("ooooh im splitting\n");
+	printf("im splitting\n");
 	if((ssize_t)block->size - (ssize_t)size < (ssize_t)(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
 	printf("no split req %zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
-
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
 	printf("%zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
-	d_block* newblock = (d_block*)((void*)block + sizeof(d_block) + size);
+	d_block* newblock = (d_block*)((char*)block + sizeof(d_block) + size);
 	printf("newblock acces incoming, old block has %zd size versus req of %zd\n", block->size, size);
-	newblock->size = aligned_size(block->size - size - sizeof(d_block));
+	newblock->size = block->size - size - sizeof(d_block);
 	printf("newblock acces success\n");
 	if(newblock->size < BIG_BLOCK_SIZE / 4 && newblock->size > block->size - size - sizeof(d_block))
 	{	/*

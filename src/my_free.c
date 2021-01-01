@@ -25,7 +25,7 @@ my_free(void* ptr)
 		d_heap* heap  = get_heap_of_block(block);
 		printf("heap e %p\n", heap);
 		printf("size %ld\n", block->size);
-		while(1);
+		//while(1);
 		if(MALLOC_ATOMIC)
 			pthread_mutex_unlock(&global_mutex);
 		return;
