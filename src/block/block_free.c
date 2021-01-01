@@ -99,7 +99,7 @@ merge_blocks(d_block* bl, d_block* br)
 	//printf("bl %p are size %zd\n", bl, sizeof(d_block));
 	//printf("br %p are size %zd\n", br, sizeof(br));
 		printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
-	//bl->size += sizeof(d_block) + br->size;
+	bl->size += sizeof(d_block) + br->size;
 	printf("nocrash\n");
 	if(bl->size % 8 && bl->size < BIG_BLOCK_SIZE / 4) // logic nu ar trebui sa ajunga pe cazul asta niciodata
 	{
