@@ -4,10 +4,10 @@ void*
 my_alloc(size_t size)
 {
 	if(MALLOC_ATOMIC)
-	{
+	//{
 		//printf("bruh\n");
-		pthread_mutex_lock(&global_mutex);
-	}
+		if(pthread_mutex_lock(&global_mutex)) while(1);
+	//}
 
 	if(!bins_initialized)
 	{
@@ -42,7 +42,7 @@ my_alloc(size_t size)
 	{
 	printf("after malloc\n");
 	show_all_heaps();
-		pthread_mutex_unlock(&global_mutex);
+		if(pthread_mutex_unlock(&global_mutex)) while(1);
 	}
 	return (block + 1);
 }

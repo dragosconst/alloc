@@ -52,13 +52,13 @@ create_heap(size_t size)
 	}
 	d_block* top_block = (void*)heap + sizeof(d_heap); // blocul cu tot size-ul cerut de user in el
 	top_block->size = align_size;
-	printf("heap.c: new heap size is %ld\n", top_block->size);
+	//printf("heap.c: new heap size is %ld\n", top_block->size);
 	top_block->free = 1;
 	top_block->last = 1;
 
 	// acum, sa il bagam in bin-ul corespunzator (daca incape intr-un bin)
 	int bin_index = get_bin_type(top_block->size);
-	printf("heap.c: placing in %d bin\n", bin_index);
+	//printf("heap.c: placing in %d bin\n", bin_index);
 	if(bin_index >= 0 && !pseudo_bins[bin_index])
 	{
 		pseudo_bins[bin_index] = top_block;
