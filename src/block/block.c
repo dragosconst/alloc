@@ -88,6 +88,7 @@ search_for_free_block(size_t size)
 
 	if(bin_block->prev != bin_block)
 	{
+	printf("bin block %p, next %p, prev %p\n", bin_block, bin_block->next, bin_block->prev);
 		bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
 		bin_block->next->prev = bin_block->prev;
 		if(bin_block == pseudo_bins[bin_index]) // la large bins e posibil sa fie altundeva block ul gasit
