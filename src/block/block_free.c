@@ -90,37 +90,52 @@ get_next_block(d_block* block)
 	return NULL;
 }
 
+void
+remove_block_from_bin(d_block* victim)
+{
+
+	if(pseudo_bins[get_bin_type(victim->size)] == victim) // e primul in bin
+	{
+		printf("ramura if\n");
+		pseudo_bins[get_bin_type(victim->size)] = (victim->next == victim ? NULL : victim->next); // daca e singurul din bin, il inlocuiesc cu NULL
+	}
+	else
+	{
+		d_block* bin = pseudo_bins[get_bin_type(victim->size)];
+		if(!bin) printf("thinking about %p\n", bin);
+		printf("bin is %p and br is %p and bin->next is %p and br->next is %p and bin->prev is %p and br->prev is %p\n", bin, victim, bin->next, victim->next, bin->prev, victim->prev);
+	}
+	//printf("br %p are size %zd\n", br, sizeof(br));
+	//printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
+	if(victim->prev)
+		victim->prev->next = victim->next;
+	if(victim->next)
+		victim->next->prev = victim->prev;
+}
+
 d_block*
 merge_blocks(d_block* bl, d_block* br)
 {
 	// ordinea argumentelor e importanta, ca sa fie mai usoara implementarea
-	// de observat ca e mostenita valoarea de free din bl, evident se presupune ca e free si bl, si br
 	//printf("block_free.c: merging block of size %zd with block of size %zd\n", bl->size, br->size);
 	//printf("bl %p are size %zd\n", bl, sizeof(d_block));
 	//printf("br %p are size %zd\n", br, sizeof(br));
-		printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
+	// de observat ca e mostenita valoarea de free din bl, evident se presupune ca e free si bl, si br
+	if(bl->free)
+		remove_block_from_bin(bl);
 	bl->size += sizeof(d_block) + br->size;
 	printf("nocrash\n");
 	if(bl->size % 8 && bl->size < BIG_BLOCK_SIZE / 4) // logic nu ar trebui sa ajunga pe cazul asta niciodata
 	{
-		//printf("block_free.c: failed size calculation %ld\n", bl->size);
+		printf("block_free.c: failed size calculation %ld\n", bl->size);
 		while(1);
 	}
 	if(br->last)
 		bl->last = 1;
 	//printf("nocrash2\n");
 	// br trebuie scos din bin_ul sau, de bl se ocupa ala care a apelat functia
-	if(pseudo_bins[get_bin_type(br->size)] == br) // e primul in bin
-	{
-	//	printf("ramura if\n");
-		pseudo_bins[get_bin_type(br->size)] = (br->next == br ? NULL : br->next); // daca e singurul din bin, il inlocuiesc cu NULL
-	}
-	//printf("br %p are size %zd\n", br, sizeof(br));
-	//printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
-	if(br->prev)
-		br->prev->next = br->next;
-	if(br->next)
-		br->next->prev = br->prev;
+	if(br->free)
+		remove_block_from_bin(br);
 	// nu e obligatoriu sa le fac NULL
 	//br->next = NULL;
 	//br->prev = NULL;

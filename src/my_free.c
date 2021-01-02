@@ -7,7 +7,7 @@
 void
 my_free(void* ptr)
 {
-	//printf("im freeing\n");
+	printf("im freeing %p\n", (char*)ptr - sizeof(d_block));
 	if(MALLOC_ATOMIC)
 		if(pthread_mutex_lock(&global_mutex))
 		while(1); // nimeni nu tre sa se atinga de block pana free nu e gata
@@ -32,7 +32,6 @@ my_free(void* ptr)
 		return;
 	}
 	//printf("passed validation\n");
-	block->free = 1;
 	// block urile imense trebuie date inapoi la sistem
 	if(block->size > VBIG_BLOCK_SIZE * 2)
 	{
@@ -45,39 +44,41 @@ my_free(void* ptr)
 	//show_all_heaps();
 	// merging
 	d_block* prev_block = get_prev_block(block);
-	if(prev_block && !is_valid_addr(prev_block))
-		printf("ceva e busit grav\n");
 	d_block* next_block = get_next_block(block);
-	if(next_block && !is_valid_addr(next_block))
-		printf("ceva chiar e busit grav next\n");
+	printf("prev is %p next is %p\n", prev_block, next_block);
 	if(prev_block) // blocul de dinainte era free
 	{
 		//printf("prev merge\n");
 		block = merge_blocks(prev_block, block);
+		block->free = 0; // pt merge-ul urmator, daca il face
+		show_all_bins();
 	}
 	if(next_block)
 	{
 		//printf("next merge\n");
 		block = merge_blocks(block, next_block);
 	}
+	block->free = 1;
+	show_all_bins();
 	show_all_heaps();
 	//printf("free.c: got past merges, size is %zd\n", block->size);
 	if(block->last && block->size > VBIG_BLOCK_SIZE * 2)
 	{	// 3 * pagesize nu e tocmai un nr mare, dar l am ales arbitrar ca sa pot testa usor daca elibereaza catre OS
-		//free_some_to_os(block);
-		//printf("free.c: trimming block, new size is %zd\n", block->size);
+		free_some_to_os(block);
+		printf("free.c: trimming block, new size is %zd\n", block->size);
 	}
 
 	//printf("free.c: searching for bins\n");
 	// insert free block in bin
 	int bin_index = get_bin_type(block->size);
+	printf("bin index is %d for size %zd\n", bin_index, block->size);
 	// TODO: sorting pe large bins
-	if(!pseudo_bins[bin_index])
+	if(bin_index >= 0 && !pseudo_bins[bin_index])
 	{
 		pseudo_bins[bin_index] = block;
 		block->next = block->prev = block;
 	}
-	else
+	else if(bin_index >= 0)
 	{
 		d_block* bin_first = pseudo_bins[bin_index];
 		bin_first->prev->next = block;
@@ -85,6 +86,7 @@ my_free(void* ptr)
 		block->prev = bin_first->prev;
 		bin_first->prev = block;
 	}
+	show_all_bins();
 	show_all_heaps();
 	if(MALLOC_ATOMIC)
 		if(pthread_mutex_unlock(&global_mutex)) while(1);

@@ -51,8 +51,8 @@ search_for_free_block(size_t size)
 	{	// la large bins trebuie facut si un split si un search mai comprehensiv
 		bin_block = find_best_fit(size, bin_block);
 		//printf("im splittin stuff\n");
-		if(bin_block)	// e posibil ca find best fit sa dea fail
-			bin_block = split_block(size, bin_block);
+		if(bin_block)//;	// e posibil ca find best fit sa dea fail
+			/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
 		//else
 			//printf("actually nah im not\n");
 	}
@@ -67,7 +67,7 @@ search_for_free_block(size_t size)
 		else
 			bin_block = find_best_fit(size, pseudo_bins[bin_index]);
 		//printf("block.c: asking for %zd size, bin size is %zd, bin index is %d\n", size, pseudo_bins[bin_index]->size, bin_index);
-		bin_block = split_block(size, bin_block);
+		/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
 
 		if(bin_block->prev != bin_block)
@@ -107,34 +107,25 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 		printf("cant split null block\n");
 		return NULL;
 	}
-	if(!is_valid_addr(block)) printf("how did this happen\n");
+	if(!is_valid_addr(block))
+	{
+		printf("how did this happen block is %p zise is %zd\n", block, size);
+		//return block;
+	}
 	// size has to be aligned
 	//printf("im splitting\n");
 	if((ssize_t)block->size - (ssize_t)size < (ssize_t)(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
-	//printf("no split req %zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
+	printf("no split req %zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
+//		while(1);
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
 	//printf("%zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
 	d_block* newblock = (d_block*)((char*)block + sizeof(d_block) + size);
+	memset(newblock, 0, block->size - size - sizeof(d_block));
 	//printf("newblock acces incoming, old block has %zd size versus req of %zd\n", block->size, size);
 	newblock->size = block->size - size - sizeof(d_block);
 	//printf("newblock acces success\n");
-	if(newblock->size < BIG_BLOCK_SIZE / 4 && newblock->size > block->size - size - sizeof(d_block))
-	{	/*
-			Singurul fel in care pot ajunge in situatia asta logic ar fi daca sizeof(d_block) nu ar fi multiplu de 8.
-			Caz in care e posibil ca alinierea sa creasca size-ul noului bloc, dar eu de fapt o vreau mai mica, ca sa
-			incape in spatiul disponibil. Asta inseamna o pierdere de maxim 7 bytes pe spli, deoarece in cel mai rau
-			caz, cand nb->size mod 8 e 7, ultimii 7 bytes nu intra in size. Nu ar trebui sa afecteze functionalitatea
-			prea mult, deoarece request-urile userului vor fi garantate, iar pierderea asta e oricum dependenta de
-			arhitectura sistemului. Un sistem pe care sizeof(d_block) mod 8 e 0 nu pierde niciun byte.
-			Oricum, pentru valori din large bins, nu ne intereseaza sa pastram un multiplu fix de 8, deci pierderea se
-			va face doar pe valori <512 bytes.
-		*/
-		newblock->size -= 8; // TODO: eventual un macro in loc de 8 magic number
-		printf("halt\n");
-		while(1);
-	}
 	newblock->free = 1;
 	if(block->last)
 	{	// split pe ultimu bloc creeaza un nou ultim bloc

@@ -22,16 +22,17 @@ get_bin_type(size_t size)
 {
 	//printf("utils.c: checking size is %zd max size is %zd\n", size);
 	// se presupune ca e dat un size care incape intr-un bin
-	int index = (size / 8) - 1;
+	size_t index = (size / 8) - 1;
+	printf("utils.c: index is %zd\n", index);
 	if(index <= 63) // small bins
-		return index;
-	if(size >= BIG_BLOCK_SIZE / 4 && size <= BIG_BLOCK_SIZE * 2)
+		return (int)index;
+	if((int)size >= BIG_BLOCK_SIZE / 4 && (int)size <= BIG_BLOCK_SIZE * 2)
 		return 64; // stiu ca e magic number, dar din moment ce am doar 2 large bins, nu cred ca e o problema asa mare
-	else if(size >= VBIG_BLOCK_SIZE / 4 && size <= VBIG_BLOCK_SIZE * 2)
+	else if((int)size >= VBIG_BLOCK_SIZE / 4 && (int)size <= VBIG_BLOCK_SIZE * 2)
 		return 65;
 	else
 	{
-		printf("parametru size trimis in get bin type prost?\n");
+		printf("parametru size trimis in get bin type prost: %ld?\n", size);
 		return -1;
 	}
 }
@@ -39,10 +40,10 @@ get_bin_type(size_t size)
 int
 get_closest_bin_type(size_t size)
 {
-	int index = (size / 8) - 1;
+	size_t index = (size / 8) - 1;
 	if(index > 63)
 	{	// pe large bins trebuie sa caut efectiv daca exista o valoare suitable
-		if(size <= BIG_BLOCK_SIZE * 2 && pseudo_bins[64])
+		if((int)size <= BIG_BLOCK_SIZE * 2 && pseudo_bins[64])
 		{
 			d_block* bin = pseudo_bins[64];
 			d_block* old = bin;
@@ -54,7 +55,7 @@ get_closest_bin_type(size_t size)
 				bin = bin->next;
 			}while(old != bin);
 		}
-		if(size <= VBIG_BLOCK_SIZE * 2 && pseudo_bins[65])
+		if((int)size <= VBIG_BLOCK_SIZE * 2 && pseudo_bins[65])
 		{
 			d_block* bin = pseudo_bins[65];
 			d_block* old = bin;
@@ -114,6 +115,39 @@ show_all_heaps()
 	}while(heap != old);
 
 	for(int i = 0; i < 60; ++i)
+		printf("-");
+	printf("\n");
+}
+
+void
+show_all_bins()
+{
+	for(int i = 0; i < 160; ++i)
+		printf("-");
+	printf("\n");
+	for(int i = 0; i < 66; ++i)
+	{
+		if(pseudo_bins[i])
+		{
+			d_block* init = pseudo_bins[i];
+			d_block* old = init;
+			printf("bin %d has: ", i);
+			int max_nr = 0;
+			do
+			{
+				printf("%p with size %zd, ",init, init->size); 
+				max_nr++;
+				init = init->next;
+			}while(old != init && max_nr <= 10);
+			printf("\n");
+		}
+		else
+		{
+			printf("bin %d is empty\n", i);
+		}
+	}
+
+	for(int i = 0; i < 160; ++i)
 		printf("-");
 	printf("\n");
 }
