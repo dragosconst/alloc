@@ -36,6 +36,7 @@ my_free(void* ptr)
 	if(block->size > VBIG_BLOCK_SIZE * 2)
 	{
 		free_heap_to_os(block);
+		show_all_heaps();
 		if(MALLOC_ATOMIC)
 			if(pthread_mutex_unlock(&global_mutex)) while(1);
 		return;
