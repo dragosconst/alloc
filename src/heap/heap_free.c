@@ -36,8 +36,8 @@ free_some_to_os(d_block* block)
 	d_heap* heap = get_heap_of_block(block);
 	// stim sigur ca putem da fara probleme tot peste VBIG_BLOCK_SIZE *2
 	size_t total_size = heap->all_size + sizeof(d_heap);
-	size_t to_free = total_size - VBIG_BLOCK_SIZE * 2;
-	void* max_len = (void*)block + sizeof(d_block) + VBIG_BLOCK_SIZE * 2; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
+	size_t to_free = total_size - VBIG_BLOCK_SIZE;
+	char* max_len = (char*)block + sizeof(d_block) + VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
 	size_t offset = (uintptr_t)(max_len) % getpagesize();
 	if((uintptr_t)(max_len) % getpagesize()) max_len -= ((uintptr_t)(max_len) % getpagesize()); // adaug orice mai ramane din pagina pe care se afla max_len
 	to_free += ((uintptr_t)(max_len) % getpagesize());
@@ -47,6 +47,6 @@ free_some_to_os(d_block* block)
 		return NULL;
 	}
 	heap->all_size -= to_free;
-	block->size -= (block->size - VBIG_BLOCK_SIZE * 2 - offset); // block trebuie bagat la loc in bin de funtia care apeleaza aici
+	block->size -= (block->size - VBIG_BLOCK_SIZE - offset); // block trebuie bagat la loc in bin de funtia care apeleaza aici
 	return heap;
 }

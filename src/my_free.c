@@ -71,22 +71,7 @@ my_free(void* ptr)
 
 	//printf("free.c: searching for bins\n");
 	// insert free block in bin
-	int bin_index = get_bin_type(block->size);
-	printf("bin index is %d for size %zd\n", bin_index, block->size);
-	// TODO: sorting pe large bins
-	if(bin_index >= 0 && !pseudo_bins[bin_index])
-	{
-		pseudo_bins[bin_index] = block;
-		block->next = block->prev = block;
-	}
-	else if(bin_index >= 0)
-	{
-		d_block* bin_first = pseudo_bins[bin_index];
-		bin_first->prev->next = block;
-		block->next = bin_first;
-		block->prev = bin_first->prev;
-		bin_first->prev = block;
-	}
+	insert_block_in_bin(block);
 	show_all_bins();
 	show_all_heaps();
 	if(MALLOC_ATOMIC)

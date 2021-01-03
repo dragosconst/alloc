@@ -11,28 +11,26 @@
 */
 #include "my_alloc.h"
 
+
+/*
+	Functie apelata doar pe large bins.
+*/
 d_block*
 find_best_fit(size_t size, d_block* bin_start)
 {
 	d_block* old = bin_start;
-	d_block* best = NULL;
-	ssize_t closest_fit = VBIG_BLOCK_SIZE * 2;
 	//printf("closest fit is %zd differance is %zd\n", closest_fit,  (ssize_t)bin_start->size - (ssize_t)size);
 	//printf("stuck in find_best_fit\n");
 	//printf("old is %p old->next %p old->prev %p\n", old, old->next, old->prev);
 	do
-	{
-		if((ssize_t)bin_start->size - (ssize_t)size >= 0 && (ssize_t)bin_start->size - (ssize_t)size < closest_fit)
-		{
-			//printf("val is %zd and abs is %zd\n", (ssize_t)bin_start->size - (ssize_t)size, abs_big((ssize_t)bin_start->size - (ssize_t)size));
-			closest_fit = bin_start->size - size;
-			best = bin_start;
-		}
+	{	// fiind garantata ordinea crescatoarea, primul block cu size suficient e si cel mai bun
+		if(bin_start->size >= size)
+			return bin_start;
 		bin_start = bin_start->next;
 		//printf("bin start is %p, but old is %p\n", bin_start, old);
 	}while(old != bin_start);
-
-	return best;
+	// daca am ajuns aici, inseamna ca nu exista niciun block in bin suficient de mare
+	return NULL;
 }
 
 d_block*
@@ -47,10 +45,10 @@ search_for_free_block(size_t size)
 	d_block* bin_block = pseudo_bins[bin_index];
 	//printf("block.c: asking for bin %d...\n", bin_index);
 
-	if(bin_block && size >= BIG_BLOCK_SIZE / 4)
+	if(bin_block && size >= BIG_BLOCK_SIZE)
 	{	// la large bins trebuie facut si un split si un search mai comprehensiv
 		bin_block = find_best_fit(size, bin_block);
-		//printf("im splittin stuff\n");
+		//printf("im splittin stuff\n");.
 		if(bin_block)//;	// e posibil ca find best fit sa dea fail
 			/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
 		//else
@@ -136,25 +134,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	{
 		newblock->last = 0;
 	}
-
-	int bin_index = get_bin_type(newblock->size);
-	//printf("block.c: bin index is %d\n", bin_index);
-	// inserare in bin
-	if(pseudo_bins[bin_index])
-	{	// pastrez structura de lista dublu inlantuita circulara si adaug bloc-ul la final
-		//printf("block.c: adding to queue\n");
-		pseudo_bins[bin_index]->prev->next = newblock;
-		newblock->next = pseudo_bins[bin_index];
-		newblock->prev = pseudo_bins[bin_index]->prev;
-		pseudo_bins[bin_index]->prev = newblock;
-	}
-	else
-	{
-		//printf("block.c: new bin\n");
-		pseudo_bins[bin_index] = newblock;
-		newblock->prev = newblock->next = newblock;
-	}
-
+	insert_block_in_bin(newblock);
 	block->size = size;
 	if(!is_valid_addr(block)) printf("how did this happen\n");
 	// size vine gata aliniat

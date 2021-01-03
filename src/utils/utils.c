@@ -26,15 +26,78 @@ get_bin_type(size_t size)
 	printf("utils.c: index is %zd\n", index);
 	if(index <= 63) // small bins
 		return (int)index;
-	if((int)size >= BIG_BLOCK_SIZE / 4 && (int)size <= BIG_BLOCK_SIZE * 2)
-		return 64; // stiu ca e magic number, dar din moment ce am doar 2 large bins, nu cred ca e o problema asa mare
-	else if((int)size >= VBIG_BLOCK_SIZE / 4 && (int)size <= VBIG_BLOCK_SIZE * 2)
-		return 65;
+	else if(size <= VBIG_BLOCK_SIZE)
+	{
+		size_t old_min = 512;
+		for(int i = 64; i < NBINS; ++i)
+		{
+			size_t min_size = old_min;
+			size_t max_size = old_min + LARGE_RANGE;
+			if(min_size <= size && size <= max_size)
+				return i;
+			old_min = max_size;
+		}
+	}
 	else
 	{
+		// daca ajung aici, nu e neaparat trimis prost, de-aia am pus ?
+		// sunt situatii in care verific daca functia returneaza -1 exclusiv
 		printf("parametru size trimis in get bin type prost: %ld?\n", size);
 		return -1;
 	}
+}
+
+void
+insert_block_in_bin(d_block* block)
+{
+	if(block->size <= 512)
+	{	// smallbin insertion, easy
+		int bin_index = block->size / 8 - 1;
+		if(!pseudo_bins[bin_index])
+		{
+			pseudo_bins[bin_index] = block;
+			block->next = block->prev = block;
+		}
+		else
+		{
+			d_block* bin = pseudo_bins[bin_index];
+			bin->prev->next = block;
+			block->prev = bin->prev;
+			block->next = bin;
+			bin->prev = block;
+		}
+	}
+	else if(block->size <= VBIG_BLOCK_SIZE)
+	{	// large bin insertion, do insertion sort
+		int bin_index = get_bin_type(block->size);
+		if(!pseudo_bins[bin_index])
+		{
+			pseudo_bins[bin_index] = block;
+			block->next = block->prev = block;
+		}
+		else
+		{
+			d_block* bin = pseudo_bins[bin_index];
+			size_t cr_size;
+			d_block* old = bin;
+			do
+			{	// mergem pe presupunerea ca bin-ul e deja sortat
+				if(bin->size > block->size)
+					break;
+				bin = bin->next;
+			}while(bin != old);
+
+			bin->prev->next = block;
+			block->prev = bin->prev;
+			block->next = bin;
+			bin->prev = block;
+			if(bin == pseudo_bins[bin_index] && bin->size > block->size)
+			{
+				// cazul in care toate block urile din bin sunt mai mari, si deci trebuie pus pe prima pozitie din bin
+				pseudo_bins[bin_index] = block;
+			}
+		}
+	} // daca nu se incadreaza in niciun bin, nu facem nimic
 }
 
 int
@@ -42,30 +105,20 @@ get_closest_bin_type(size_t size)
 {
 	size_t index = (size / 8) - 1;
 	if(index > 63)
-	{	// pe large bins trebuie sa caut efectiv daca exista o valoare suitable
-		if((int)size <= BIG_BLOCK_SIZE * 2 && pseudo_bins[64])
+	{	// pe large bins trebuie sa caut efectiv daca exista o valoare suitable, deoarece operez pe range-uri;
+		for(int i = 64; i < NBINS; ++i)
 		{
-			d_block* bin = pseudo_bins[64];
-			d_block* old = bin;
-			do
+			if(pseudo_bins[i])
 			{
-				printf("utils.c: bin size is %zd block's size is %zd\n", bin->size, size);
-				if(bin->size >= size)
-					return 64;
-				bin = bin->next;
-			}while(old != bin);
-		}
-		if((int)size <= VBIG_BLOCK_SIZE * 2 && pseudo_bins[65])
-		{
-			d_block* bin = pseudo_bins[65];
-			d_block* old = bin;
-			do
-			{
-				printf("utils.c: bin size is %zd block's size is %zd\n", bin->size, size);
-				if(bin->size >= size)
-					return 65;
-				bin = bin->next;
-			}while(old != bin);
+				d_block* bin = pseudo_bins[i];
+				d_block* old_bin = bin;
+				do
+				{
+					if(bin->size >= size)
+						return i;
+					bin = bin->next;
+				}while(bin != old_bin);
+			}
 		}
 		return -1;
 	}
