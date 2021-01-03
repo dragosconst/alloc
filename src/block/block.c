@@ -20,14 +20,14 @@ find_best_fit(size_t size, d_block* bin_start)
 {
 	d_block* old = bin_start;
 	//printf("closest fit is %zd differance is %zd\n", closest_fit,  (ssize_t)bin_start->size - (ssize_t)size);
-	//printf("stuck in find_best_fit\n");
+	printf("stuck in find_best_fit\n");
 	//printf("old is %p old->next %p old->prev %p\n", old, old->next, old->prev);
 	do
 	{	// fiind garantata ordinea crescatoarea, primul block cu size suficient e si cel mai bun
 		if(bin_start->size >= size)
 			return bin_start;
 		bin_start = bin_start->next;
-		//printf("bin start is %p, but old is %p\n", bin_start, old);
+		printf("bin start is %p, but old is %p\n", bin_start, old);
 	}while(old != bin_start);
 	// daca am ajuns aici, inseamna ca nu exista niciun block in bin suficient de mare
 	return NULL;
@@ -50,7 +50,12 @@ search_for_free_block(size_t size)
 		bin_block = find_best_fit(size, bin_block);
 		printf("im splittin stuff\n");
 		if(bin_block)//;	// e posibil ca find best fit sa dea fail
+		{
+			remove_block_from_bin(bin_block);
+			bin_block->free = 0;
 			/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
+			return bin_block;
+		}
 		else
 			printf("actually nah im not\n");
 	}
@@ -65,34 +70,16 @@ search_for_free_block(size_t size)
 		else
 			bin_block = find_best_fit(size, pseudo_bins[bin_index]);
 		//printf("block.c: asking for %zd size, bin size is %zd, bin index is %d\n", size, pseudo_bins[bin_index]->size, bin_index);
+		remove_block_from_bin(bin_block);
 		/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
-
-		if(bin_block->prev != bin_block)
-		{
-			//printf("bin block %p, next %p, prev %p\n", bin_block, bin_block->next, bin_block->prev);
-			bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
-			bin_block->next->prev = bin_block->prev;
-			if(bin_block == pseudo_bins[bin_index])
-				pseudo_bins[bin_index] = bin_block->next;
-		}
-		else pseudo_bins[bin_index] = NULL;
 		//printf("block.c: request granted\n");
 		//bin_block->next = bin_block->prev = NULL;
 		return bin_block;
 	}
 
 	bin_block->free = 0;
-
-	if(bin_block->prev != bin_block)
-	{
-	//printf("bin block %p, next %p, prev %p\n", bin_block, bin_block->next, bin_block->prev);
-		bin_block->prev->next = bin_block->next; // scot din lista dublu inlantuita
-		bin_block->next->prev = bin_block->prev;
-		if(bin_block == pseudo_bins[bin_index]) // la large bins e posibil sa fie altundeva block ul gasit
-			 pseudo_bins[bin_index] = bin_block->next;
-	}
-	else pseudo_bins[bin_index] = NULL;
+	remove_block_from_bin(bin_block);
 	//bin_block->next = bin_block->prev = NULL;
 	return bin_block;
 }

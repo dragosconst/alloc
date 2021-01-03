@@ -31,7 +31,7 @@ my_free(void* ptr)
 	}
 	//printf("passed validation\n");
 	// block urile imense trebuie date inapoi la sistem
-	if(block->last && block->size > VBIG_BLOCK_SIZE * 2)
+	if(block->last && block->size > VBIG_BLOCK_SIZE)
 	{
 		free_heap_to_os(block);
 		show_all_heaps();
@@ -60,7 +60,7 @@ my_free(void* ptr)
 	show_all_bins();
 	show_all_heaps();
 	//printf("free.c: got past merges, size is %zd\n", block->size);
-	if(block->last && block->size > VBIG_BLOCK_SIZE * 2)
+	if(block->last && block->size > VBIG_BLOCK_SIZE)
 	{	// 3 * pagesize nu e tocmai un nr mare, dar l am ales arbitrar ca sa pot testa usor daca elibereaza catre OS
 		printf("current heap size is %zd\n", get_heap_of_block(block)->all_size);
 		free_some_to_os(block);

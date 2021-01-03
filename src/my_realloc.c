@@ -38,7 +38,8 @@ my_realloc(void* ptr, size_t newsize)
 	if(newsize <= block->size) // pe cazul in care vrem sa shrinkuim blocul
 	{
 		printf("realloc.c: block has size %ld\n", block->size);
-		remove_block_from_bin(block);
+		if(block->free && get_bin_type(block->size) > 0)
+			remove_block_from_bin(block);
 		block = split_block(newsize, block);
 		printf("realloc.c: block after split has %zd\n", block->size);
 		show_all_bins();
