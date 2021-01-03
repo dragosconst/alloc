@@ -47,7 +47,7 @@ my_realloc(void* ptr, size_t newsize)
 		pthread_mutex_unlock(&global_mutex);
 		return (block + 1);
 	}
-	/*else // trebuie sa cautam undeva
+	else // trebuie sa cautam undeva
 	{
 		// mai intai ma uit daca blocul dupa el e liber si destul de mare
 		size_t extra_size = newsize - block->size;
@@ -58,20 +58,24 @@ my_realloc(void* ptr, size_t newsize)
 				printf("you fed up \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ /n");
 			if(is_valid_addr(next_block) && next_block->free)
 			{
-				if(next_block->size >= extra_size)
+				/*
+				Pentru ca inghit si sizeof(d_block) cand iau urm block, ma intereseaza daca are size in plus
+				tinand cont si de dimensiunea metadatelor.
+				*/
+				if(next_block->size + sizeof(d_block) >= extra_size)
 				{
-
-					next_block = split_block(extra_size, next_block);
+					if(get_bin_type(next_block->size) > 0) // stim deja ca next_block e free
+						remove_block_from_bin(next_block);
+					next_block = split_block(extra_size - sizeof(d_block), next_block);
 					block->size += next_block->size + sizeof(d_block);
 					if(next_block->last)// daca in urma splitului nu s a intamplat nimic cu next block
 						block->last = 1;
 
-					MALLOC_ATOMIC = 1;
 					pthread_mutex_unlock(&global_mutex);
 					return (block + 1);
 				}
 			}
-		}*/
+		}
 		// trebuie cautat altundeva spatiu
 		printf("getting real close to finishing realloc\n");
 		size_t copy_for = block->size;
@@ -92,5 +96,5 @@ my_realloc(void* ptr, size_t newsize)
 		}*/
 		pthread_mutex_unlock(&global_mutex);
 		return (to_move + 1);
-	//}
+	}
 }
