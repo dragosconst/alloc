@@ -35,18 +35,21 @@ free_some_to_os(d_block* block)
 	// functia e apelata cand vreau sa dau pagini la OS pana raman cu ceva ce poate fi pastrat in bin
 	d_heap* heap = get_heap_of_block(block);
 	// stim sigur ca putem da fara probleme tot peste VBIG_BLOCK_SIZE *2
-	size_t total_size = heap->all_size + sizeof(d_heap);
-	size_t to_free = total_size - VBIG_BLOCK_SIZE;
-	char* max_len = (char*)block + sizeof(d_block) + VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
-	size_t offset = (uintptr_t)(max_len) % getpagesize();
-	if((uintptr_t)(max_len) % getpagesize()) max_len -= ((uintptr_t)(max_len) % getpagesize()); // adaug orice mai ramane din pagina pe care se afla max_len
+	ssize_t total_size = block->size;
+	ssize_t to_free = total_size - (ssize_t)VBIG_BLOCK_SIZE;
+	char* max_len = (char*)block + sizeof(d_block) + (ssize_t)VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
+	ssize_t offset = (uintptr_t)(max_len) % getpagesize();
+	printf("vbig block size %zd total_size is %zd tot-big=%zd\n", (ssize_t)VBIG_BLOCK_SIZE, total_size, total_size - (ssize_t)VBIG_BLOCK_SIZE);
+	printf("total size %zd to free %zd max len %zd offset %zd\n", total_size, to_free, max_len, offset);
 	to_free += ((uintptr_t)(max_len) % getpagesize());
+	if((uintptr_t)(max_len) % getpagesize()) max_len -= ((uintptr_t)(max_len) % getpagesize()); // adaug orice mai ramane din pagina pe care se afla max_len
+	printf("total size %zd to free %zd max len %zd offset %zd\n", total_size, to_free, max_len, offset);
 	if(munmap(max_len, to_free) < 0)
 	{
 		perror("eroare la eliberarea de memorie");
 		return NULL;
 	}
-	heap->all_size -= to_free;
-	block->size -= (block->size - VBIG_BLOCK_SIZE - offset); // block trebuie bagat la loc in bin de funtia care apeleaza aici
+	heap->all_size -= to_free; // could be buggy?
+	block->size -= to_free; // block trebuie bagat la loc in bin de funtia care apeleaza aici
 	return heap;
 }

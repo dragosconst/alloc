@@ -90,29 +90,6 @@ get_next_block(d_block* block)
 	return NULL;
 }
 
-void
-remove_block_from_bin(d_block* victim)
-{
-
-	if(pseudo_bins[get_bin_type(victim->size)] == victim) // e primul in bin
-	{
-		printf("ramura if\n");
-		pseudo_bins[get_bin_type(victim->size)] = (victim->next == victim ? NULL : victim->next); // daca e singurul din bin, il inlocuiesc cu NULL
-	}
-	else
-	{
-		d_block* bin = pseudo_bins[get_bin_type(victim->size)];
-		if(!bin) printf("thinking about %p\n", bin);
-		printf("bin is %p and br is %p and bin->next is %p and br->next is %p and bin->prev is %p and br->prev is %p\n", bin, victim, bin->next, victim->next, bin->prev, victim->prev);
-	}
-	//printf("br %p are size %zd\n", br, sizeof(br));
-	//printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
-	if(victim->prev)
-		victim->prev->next = victim->next;
-	if(victim->next)
-		victim->next->prev = victim->prev;
-}
-
 d_block*
 merge_blocks(d_block* bl, d_block* br)
 {
@@ -132,7 +109,7 @@ merge_blocks(d_block* bl, d_block* br)
 	}
 	if(br->last)
 		bl->last = 1;
-	//printf("nocrash2\n");
+	printf("nocrash2\n");
 	// br trebuie scos din bin_ul sau, de bl se ocupa ala care a apelat functia
 	if(br->free)
 		remove_block_from_bin(br);

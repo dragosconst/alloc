@@ -5,15 +5,12 @@
 #include "my_alloc.h"
 
 void
-my_free(void* ptr)
+_unlock_free(void* ptr)
 {
 	printf("im freeing %p\n", (char*)ptr - sizeof(d_block));
-	if(pthread_mutex_lock(&global_mutex))
-		while(1); // nimeni nu tre sa se atinga de block pana free nu e gata
 	if(!ptr || !heap_top)
 	{
 		printf("ptr is %p and heap_top is %p\n", ptr, heap_top);
-		if(pthread_mutex_unlock(&global_mutex)) while(1);
 		return;
 	}
 	//show_all_heaps();
@@ -26,7 +23,6 @@ my_free(void* ptr)
 		printf("heap e %p\n", heap);
 		printf("size %ld\n", block->size);
 		//while(1);
-		if(pthread_mutex_unlock(&global_mutex)) while(1);
 		return;
 	}
 	//printf("passed validation\n");
@@ -35,7 +31,6 @@ my_free(void* ptr)
 	{
 		free_heap_to_os(block);
 		show_all_heaps();
-		if(pthread_mutex_unlock(&global_mutex)) while(1);
 		return;
 	}
 	//printf("free.c: before merging, size is %zd\n", block->size);
@@ -72,6 +67,5 @@ my_free(void* ptr)
 	insert_block_in_bin(block);
 	show_all_bins();
 	show_all_heaps();
-	if(pthread_mutex_unlock(&global_mutex)) while(1);
 	// no double free protection, in standard am vazut ca nu cere
 }

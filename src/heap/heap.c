@@ -39,11 +39,13 @@ create_heap(size_t size)
 
 	// la final, trebuie adaugat un block aliniat in heap, care cuprinde tot heap-ul
 	size_t align_size = heap->all_size;
-	d_block* top_block = (void*)heap + sizeof(d_heap); // blocul cu tot size-ul cerut de user in el
+	d_block* top_block = (d_block*)((char*)heap + sizeof(d_heap)); // blocul cu tot size-ul cerut de user in el
 	top_block->size = align_size;
 	//printf("heap.c: new heap size is %ld\n", top_block->size);
 	top_block->free = 1;
 	top_block->last = 1;
+	// not sure this is needed
+	top_block->next = top_block->prev = top_block;
 	insert_block_in_bin(top_block);
 	return heap;
 }

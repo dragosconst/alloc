@@ -19,12 +19,12 @@ typedef struct _my_heap{
 	size_t          all_size;
 }_unaligned_d_heap;
 
-#pragma pack(8)
+
 typedef struct my_heap{
 	struct my_heap* prev;
 	struct my_heap* next;
 	size_t          all_size;
-	char			padding[8 - _Alignof(_unaligned_d_heap) % 8];
+	//char			padding[8 - _Alignof(_unaligned_d_heap) % 8];
 }d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
 
 typedef struct _my_block{
@@ -35,22 +35,22 @@ typedef struct _my_block{
 	int 		 	 last; // daca e ultimul de pe heap-ul sau
 
 }_unaligned_d_block;
-#pragma pack(8)
+
 typedef struct my_block {
 	struct my_block* prev;
 	struct my_block* next;
 	size_t           size;
 	int		  		 free;
 	int 		 	 last; // daca e ultimul de pe heap-ul sau
-	char			 padding[8 - _Alignof(_unaligned_d_block) % 8];
+	//char			 padding[8 - _Alignof(_unaligned_d_block) % 8];
 }d_block;
 
 
-#define NBINS 		 	  	66
+#define NBINS 		 		66
 #define BLOCK_OFFSET 	  	sizeof(struct my_block) % 8
 #define HEAP_OFFSET  	  	sizeof(struct my_heap) % 8
-#define LARGE_RANGE		  	4 * getpagesize()
-#define VBIG_BLOCK_SIZE   	(NBINS - 64) * LARGE_RANGE + 512 // cel mai mare block size care incape intr-un large bin
+#define LARGE_RANGE			4 * getpagesize()
+#define VBIG_BLOCK_SIZE   	(((NBINS - 64) * LARGE_RANGE) + 512) // cel mai mare block size care incape intr-un large bin
 #define BIG_BLOCK_SIZE	  	513 // cel mai mic block size care incape intr-un large bin, 512 e cel mai mare smallbin
 #define PREALLOC_THRESHOLD	getpagesize() // pentru valori sub macro-ul asta, prealoc niste memorie pe heap, pentru o posibila optimizare
 /*
@@ -70,13 +70,14 @@ extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
 extern pthread_mutex_t global_mutex;
 extern int bins_initialized;
 extern d_block* pseudo_bins[NBINS]; // o sa am doar 2 large bins
-extern int MALLOC_ATOMIC; // flag care indica daca vreau sau nu ca malloc si free sa foloseasca locks; useful pt realloc
 
 // functiile importante
 void* my_alloc(size_t size);
 void my_free(void* ptr);
 void* my_calloc(size_t count, size_t size);
 void* my_realloc(void* ptr, size_t newsize);
+void* _unlock_alloc(size_t size);
+void _unlock_free(void* ptr);
 
 // functii interne ale bibliotecii
 d_block* search_for_free_block(size_t size); // un heap free ori are un bloc liber, ori mai are spatiu in coada

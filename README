@@ -1,5 +1,5 @@
 compile order (momentan):
-compile_first.c -> utils.c -> heap.c -> block.c -> my_alloc.c -> heap_free.c -> block_free.c -> my_free.c -> my_calloc.c -> my_realloc.c
+compile_first.c -> utils.c -> heap.c -> block.c -> my_alloc.c -> _unlock_alloc.c -> heap_free.c -> block_free.c -> my_free.c -> _unlock_free.c -> my_calloc.c -> my_realloc.c
 
 known bugs:
 - none im aware of (presupunand ca am facut paddingul bine la structuri)

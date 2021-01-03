@@ -20,12 +20,10 @@ my_realloc(void* ptr, size_t newsize)
 		nu dau aiurea lock la un mutex deja lock-uit de thread.
 	*/
 	pthread_mutex_lock(&global_mutex);
-	MALLOC_ATOMIC = 0;
 
 	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
 	{
-		MALLOC_ATOMIC = 1;
 		pthread_mutex_unlock(&global_mutex);
 		return my_alloc(newsize);
 	}
@@ -34,19 +32,21 @@ my_realloc(void* ptr, size_t newsize)
 	if(!is_valid_addr(block))
 	{
 		printf("realloc pe pointer invalid!\n");
-		MALLOC_ATOMIC = 1;
 		pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
 	if(newsize <= block->size) // pe cazul in care vrem sa shrinkuim blocul
 	{
 		printf("realloc.c: block has size %ld\n", block->size);
+		remove_block_from_bin(block);
 		block = split_block(newsize, block);
-		MALLOC_ATOMIC = 1;
+		printf("realloc.c: block after split has %zd\n", block->size);
+		show_all_bins();
+		show_all_heaps();
 		pthread_mutex_unlock(&global_mutex);
 		return (block + 1);
 	}
-	else // trebuie sa cautam undeva
+	/*else // trebuie sa cautam undeva
 	{
 		// mai intai ma uit daca blocul dupa el e liber si destul de mare
 		size_t extra_size = newsize - block->size;
@@ -70,21 +70,26 @@ my_realloc(void* ptr, size_t newsize)
 					return (block + 1);
 				}
 			}
-		}
+		}*/
 		// trebuie cautat altundeva spatiu
 		printf("getting real close to finishing realloc\n");
 		size_t copy_for = block->size;
-		void* data = block + 1;
+		char* data = (char*)(block + 1);
+		char data_cpy[block->size];
+		memcpy(data_cpy, data, copy_for);
 		printf("entering free\n");
-		my_free(data);
+		_unlock_free(data);
 
-		void* new_add = my_alloc(newsize);
+		char* new_add = _unlock_alloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));
 		printf("realloc almost done\n");
-		memcpy(new_add, data, copy_for);
-
-		MALLOC_ATOMIC = 1;
+		// memcpy nu merge for some reason
+		memcpy(new_add, data_cpy, copy_for);
+		/*for(size_t i = 0; i < copy_for; ++i)
+		{
+			new_add[i] = data[i];
+		}*/
 		pthread_mutex_unlock(&global_mutex);
 		return (to_move + 1);
-	}
+	//}
 }

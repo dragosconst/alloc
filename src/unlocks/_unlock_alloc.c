@@ -1,10 +1,12 @@
 #include "my_alloc.h"
 
+/*
+	Malloc fara niciun lock. E nevoie de o astfel de implementare pt realloc.
+*/
 void*
-my_alloc(size_t size)
+_unlock_alloc(size_t size)
 {
 	printf("bruh\n");
-	if(pthread_mutex_lock(&global_mutex)) while(1);
 	if(!bins_initialized)
 	{
 		// n am gasit o metoda mai desteapta sa initializez bins
@@ -14,7 +16,6 @@ my_alloc(size_t size)
 	}
 	if(size <= 0)
 	{
-	pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
 	d_heap* heap;
@@ -38,6 +39,5 @@ my_alloc(size_t size)
 	printf("after malloc\n");
 	show_all_bins();
 	show_all_heaps();
-	if(pthread_mutex_unlock(&global_mutex)) while(1);
 	return (block + 1);
 }

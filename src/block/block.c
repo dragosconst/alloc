@@ -43,16 +43,16 @@ search_for_free_block(size_t size)
 	size = aligned_size(size); // alinierea ma ajuta mai ales la implementarea binsurilor
 	int bin_index = get_bin_type(size);
 	d_block* bin_block = pseudo_bins[bin_index];
-	//printf("block.c: asking for bin %d...\n", bin_index);
-
+	printf("block.c: asking for bin %d...\n", bin_index);
+	printf("ce naiba %zd %d\n", size, size >= BIG_BLOCK_SIZE);
 	if(bin_block && size >= BIG_BLOCK_SIZE)
 	{	// la large bins trebuie facut si un split si un search mai comprehensiv
 		bin_block = find_best_fit(size, bin_block);
-		//printf("im splittin stuff\n");.
+		printf("im splittin stuff\n");
 		if(bin_block)//;	// e posibil ca find best fit sa dea fail
 			/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
-		//else
-			//printf("actually nah im not\n");
+		else
+			printf("actually nah im not\n");
 	}
 	if(!bin_block)
 	{
@@ -120,9 +120,10 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	}
 	//printf("%zd %zd\n", (ssize_t)block->size - (ssize_t)size, (ssize_t)block->size - (ssize_t)size <  (ssize_t)(sizeof(d_block) + 8));
 	d_block* newblock = (d_block*)((char*)block + sizeof(d_block) + size);
-	memset(newblock, 0, block->size - size - sizeof(d_block));
-	//printf("newblock acces incoming, old block has %zd size versus req of %zd\n", block->size, size);
 	newblock->size = block->size - size - sizeof(d_block);
+	printf("newblock %p size %zd\n", newblock, newblock->size);
+	memset((char*)newblock + sizeof(d_block), 0, newblock->size);
+	//printf("newblock acces incoming, old block has %zd size versus req of %zd\n", block->size, size);
 	//printf("newblock acces success\n");
 	newblock->free = 1;
 	if(block->last)
