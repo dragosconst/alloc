@@ -54,8 +54,6 @@ my_realloc(void* ptr, size_t newsize)
 		if(!block->last)
 		{
 			d_block* next_block = (d_block*)((char*)block + sizeof(d_block) + block->size);
-			if(!is_valid_addr(next_block))
-				printf("you fed up \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ /n");
 			if(is_valid_addr(next_block) && next_block->free)
 			{
 				/*
@@ -88,12 +86,7 @@ my_realloc(void* ptr, size_t newsize)
 		char* new_add = _unlock_alloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));
 		printf("realloc almost done\n");
-		// memcpy nu merge for some reason
 		memcpy(new_add, data_cpy, copy_for);
-		/*for(size_t i = 0; i < copy_for; ++i)
-		{
-			new_add[i] = data[i];
-		}*/
 		pthread_mutex_unlock(&global_mutex);
 		return (to_move + 1);
 	}
