@@ -19,8 +19,8 @@ free_heap_to_os(d_block* block)
 	heap->next->prev = heap->prev;
 
 	// deoarece heap e alocat cu mmap, nu trebuie sa fac niciun fel de verificare la adresa sa
-	//printf("heap add = %ld hepa mod page = %d\n", heap, (uintptr_t)heap % getpagesize());
-	//printf("heap has %ld left\n", heap->all_size);
+	printf("heap add = %ld hepa mod page = %d\n", heap, (uintptr_t)heap % getpagesize());
+	printf("heap has %ld left\n", heap->all_size);
 	if(munmap(heap, heap->all_size) < 0)
 	{
 		perror("eroare la dezalocarea unui heap");

@@ -7,9 +7,11 @@
 void
 my_free(void* ptr)
 {
-	printf("im freeing %p\n", (char*)ptr - sizeof(d_block));
 	if(pthread_mutex_lock(&global_mutex))
 		while(1); // nimeni nu tre sa se atinga de block pana free nu e gata
+	printf("im freeing %p\n", (char*)ptr - sizeof(d_block));
+	show_all_bins();
+	show_all_heaps();
 	if(!ptr || !heap_top)
 	{
 		printf("ptr is %p and heap_top is %p\n", ptr, heap_top);
@@ -29,7 +31,8 @@ my_free(void* ptr)
 		if(pthread_mutex_unlock(&global_mutex)) while(1);
 		return;
 	}
-	//printf("passed validation\n");
+	printf("passed validation\n");
+	printf("some data about block: add %p size %zd free %d last %d\n", block, block->size, block->free, block->last);
 	// block urile imense trebuie date inapoi la sistem
 	if(block->last && block->size > VBIG_BLOCK_SIZE)
 	{
@@ -38,7 +41,7 @@ my_free(void* ptr)
 		if(pthread_mutex_unlock(&global_mutex)) while(1);
 		return;
 	}
-	//printf("free.c: before merging, size is %zd\n", block->size);
+	printf("free.c: before merging, size is %zd\n", block->size);
 	//show_all_heaps();
 	// merging
 	d_block* prev_block = get_prev_block(block);
@@ -59,7 +62,7 @@ my_free(void* ptr)
 	block->free = 1;
 	show_all_bins();
 	show_all_heaps();
-	//printf("free.c: got past merges, size is %zd\n", block->size);
+	printf("free.c: got past merges, size is %zd\n", block->size);
 	if(block->last && block->size > VBIG_BLOCK_SIZE)
 	{	// 3 * pagesize nu e tocmai un nr mare, dar l am ales arbitrar ca sa pot testa usor daca elibereaza catre OS
 		printf("current heap size is %zd\n", get_heap_of_block(block)->all_size);
@@ -67,7 +70,7 @@ my_free(void* ptr)
 		printf("free.c: trimming block, new heap size is %zd\n", get_heap_of_block(block)->all_size);
 	}
 
-	//printf("free.c: searching for bins\n");
+	printf("free.c: searching for bins\n");
 	// insert free block in bin
 	insert_block_in_bin(block);
 	show_all_bins();

@@ -69,11 +69,11 @@ search_for_free_block(size_t size)
 			bin_block = pseudo_bins[bin_index];
 		else
 			bin_block = find_best_fit(size, pseudo_bins[bin_index]);
-		//printf("block.c: asking for %zd size, bin size is %zd, bin index is %d\n", size, pseudo_bins[bin_index]->size, bin_index);
+		printf("block.c: asking for %zd size, bin size is %zd, bin index is %d\n", size, pseudo_bins[bin_index]->size, bin_index);
 		remove_block_from_bin(bin_block);
 		/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
 		bin_block->free = 0;
-		//printf("block.c: request granted\n");
+		printf("block.c: request granted\n");
 		//bin_block->next = bin_block->prev = NULL;
 		return bin_block;
 	}

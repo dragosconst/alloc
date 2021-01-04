@@ -20,7 +20,7 @@ my_realloc(void* ptr, size_t newsize)
 		nu dau aiurea lock la un mutex deja lock-uit de thread.
 	*/
 	pthread_mutex_lock(&global_mutex);
-
+	printf("realloc started\n");
 	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
 	{
@@ -38,7 +38,7 @@ my_realloc(void* ptr, size_t newsize)
 	if(newsize <= block->size) // pe cazul in care vrem sa shrinkuim blocul
 	{
 		printf("realloc.c: block has size %ld\n", block->size);
-		if(block->free && get_bin_type(block->size) > 0)
+		if(block->free && get_bin_type(block->size) >= 0)
 			remove_block_from_bin(block);
 		block = split_block(newsize, block);
 		printf("realloc.c: block after split has %zd\n", block->size);
@@ -54,6 +54,7 @@ my_realloc(void* ptr, size_t newsize)
 		if(!block->last)
 		{
 			d_block* next_block = (d_block*)((char*)block + sizeof(d_block) + block->size);
+			if(!is_valid_addr(next_block)) printf("HOW IN GOTTS NAME????\n\n");
 			if(is_valid_addr(next_block) && next_block->free)
 			{
 				/*
@@ -62,9 +63,12 @@ my_realloc(void* ptr, size_t newsize)
 				*/
 				if(next_block->size + sizeof(d_block) >= extra_size)
 				{
-					if(get_bin_type(next_block->size) > 0) // stim deja ca next_block e free
+					if(get_bin_type(next_block->size) >= 0) // stim deja ca next_block e free
 						remove_block_from_bin(next_block);
-					next_block = split_block(extra_size - sizeof(d_block), next_block);
+					if(sizeof(d_block) + 8 >= extra_size) // daca metadatele blocului sunt destule pt realloc, nu-mi ramane decat sa fac split cu cea mai mica valoarea posibila
+						next_block = split_block(8, next_block);
+					else
+						next_block = split_block(extra_size - sizeof(d_block), next_block);
 					block->size += next_block->size + sizeof(d_block);
 					if(next_block->last)// daca in urma splitului nu s a intamplat nimic cu next block
 						block->last = 1;

@@ -62,8 +62,8 @@ remove_block_from_bin(d_block* victim)
 		if(!bin) printf("thinking about %p\n", bin);
 		printf("bin is %p and br is %p and bin->next is %p and br->next is %p and bin->prev is %p and br->prev is %p\n", bin, victim, bin->next, victim->next, bin->prev, victim->prev);
 	}
-	//printf("br %p are size %zd\n", br, sizeof(br));
-	//printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
+	printf("br %p are size %zd\n", victim, sizeof(victim));
+	printf("br->prev = %p, br->next = %p\n",victim->prev,victim->next);
 	if(victim->prev)
 		victim->prev->next = victim->next;
 	if(victim->next)
