@@ -24,7 +24,7 @@ typedef struct my_heap{
 	struct my_heap* prev;
 	struct my_heap* next;
 	size_t          all_size;
-	//char			padding[8 - _Alignof(_unaligned_d_heap) % 8];
+	char			padding[8 - _Alignof(_unaligned_d_heap) % 8];
 }d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
 
 typedef struct _my_block{
@@ -42,7 +42,7 @@ typedef struct my_block {
 	size_t           size;
 	int		  		 free;
 	int 		 	 last; // daca e ultimul de pe heap-ul sau
-	//char			 padding[8 - _Alignof(_unaligned_d_block) % 8];
+	char			 padding[8 - _Alignof(_unaligned_d_block) % 8];
 }d_block;
 
 

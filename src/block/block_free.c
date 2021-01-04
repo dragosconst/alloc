@@ -77,15 +77,15 @@ get_next_block(d_block* block)
 	d_heap* heap = get_heap_of_block(block);
 	d_block* traverse = (d_block*)(heap + 1);
 	d_block* old_val = NULL;
-	while(old_val != block && (!old_val || (old_val && !old_val->last)))
+	while(old_val != block)// && (!old_val || (old_val && !old_val->last)))
 	{
-		//printf("chakakakakakaka\n");
 		old_val = traverse;
-		traverse = (d_block*)((char*)traverse + sizeof(d_block) + traverse->size);
+		if(!old_val->last)
+			traverse = (d_block*)((char*)traverse + sizeof(d_block) + traverse->size);
 	}
 	//printf("am ajuns la %p iar block e %p\n", traverse, block);
 	// acum, traverse e blocul fix de dupa
-	if(old_val == block && traverse->free)
+	if(traverse->free)
 		return traverse;
 	return NULL;
 }

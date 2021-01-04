@@ -122,9 +122,19 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 	{
 		newblock->last = 0;
 	}
-	insert_block_in_bin(newblock);
+
 	block->size = size;
 	if(!is_valid_addr(block)) printf("how did this happen\n");
+
+	// e posibil sa fie necesar un merge dupa un split, oricum e clar ca prev_block o sa fie ocupat
+	d_block* next_block = get_next_block(newblock);
+	if(next_block)
+	{
+		newblock->free = 0; // ca sa nu apelez remove_from_bin pt newblock, care inca nu e in niciun bin
+		newblock = merge_blocks(newblock, next_block);
+		newblock->free = 1;
+	}
+	insert_block_in_bin(newblock);
 	// size vine gata aliniat
 	return block;
 }
