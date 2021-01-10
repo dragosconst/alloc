@@ -70,6 +70,16 @@ my_free(void* ptr)
 		printf("free.c: trimming block, new heap size is %zd\n", get_heap_of_block(block)->all_size);
 	}
 
+	d_heap* my_heap = get_heap_of_block(block);
+	if(my_heap->all_size == block->size)
+		free_heaps++;
+	if(free_heaps > 2) //2 e ales arbitrar
+	{
+		printf("BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN  PE BAN PE BAN\n\n\n\n\n\n\n\n\n\n\n\n");
+		show_all_heaps();
+		scan_and_kill_heaps(my_heap); // omor heap-urile in plus
+	}
+
 	printf("free.c: searching for bins\n");
 	// insert free block in bin
 	insert_block_in_bin(block);

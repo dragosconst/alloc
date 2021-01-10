@@ -47,5 +47,6 @@ create_heap(size_t size)
 	// not sure this is needed
 	top_block->next = top_block->prev = top_block;
 	insert_block_in_bin(top_block);
+	free_heaps++;
 	return heap;
 }

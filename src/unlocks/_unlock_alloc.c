@@ -1,10 +1,7 @@
 #include "my_alloc.h"
 
-/*
-	Malloc fara niciun lock. E nevoie de o astfel de implementare pt realloc.
-*/
 void*
-_unlock_alloc(size_t size)
+my_alloc(size_t size)
 {
 	printf("bruh\n");
 	if(!bins_initialized)
@@ -16,6 +13,7 @@ _unlock_alloc(size_t size)
 	}
 	if(size <= 0)
 	{
+	pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
 	d_heap* heap;
@@ -32,6 +30,7 @@ _unlock_alloc(size_t size)
 		{	// asta inseamna ca e prea mare sa poata fi alocat pe bins, deci heap-ul tocmai creat e alocat special doar pt el
 			block = (d_block*)(heap + 1);
 			block->free = 0;
+			free_heaps--;
 			//printf("large request of %ld\n", size);
 		}
 	}
@@ -41,3 +40,4 @@ _unlock_alloc(size_t size)
 	show_all_heaps();
 	return (block + 1);
 }
+

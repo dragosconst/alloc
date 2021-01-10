@@ -71,6 +71,7 @@ extern pthread_mutex_t global_mutex;
 extern int bins_initialized;
 extern d_block* pseudo_bins[NBINS]; // o sa am doar 2 large bins
 extern int SEARCH_ATOMIC;
+extern int free_heaps;
 
 // functiile importante
 void* my_alloc(size_t size);
@@ -98,6 +99,7 @@ int is_valid_addr(void* addr);
 d_heap* get_heap_of_block(d_block* block);
 d_heap* free_some_to_os(d_block* block);
 int free_heap_to_os(d_block* block);
+void scan_and_kill_heaps(d_heap* heap);
 d_block* merge_blocks(d_block* bl, d_block* br);
 void remove_block_from_bin(d_block* victim);
 ssize_t abs_big(ssize_t arg);

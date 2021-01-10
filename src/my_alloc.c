@@ -31,6 +31,7 @@ my_alloc(size_t size)
 		{	// asta inseamna ca e prea mare sa poata fi alocat pe bins, deci heap-ul tocmai creat e alocat special doar pt el
 			block = (d_block*)(heap + 1);
 			block->free = 0;
+			free_heaps--;
 			//printf("large request of %ld\n", size);
 		}
 	}

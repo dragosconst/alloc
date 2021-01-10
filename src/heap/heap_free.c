@@ -29,6 +29,39 @@ free_heap_to_os(d_block* block)
 	return 1;
 }
 
+void
+scan_and_kill_heaps(d_heap* ignore)
+{
+	d_heap* heap = heap_top;
+	while(free_heaps > 2)
+	{
+		d_block* first_block = (d_block*)(heap + 1);
+		if(heap != ignore && first_block->free && first_block->size == heap->all_size)
+		{	// avem un heap liber
+			d_heap* to_del = heap;
+			heap = heap->prev;
+
+			if(get_bin_type(first_block->size) >= 0)
+			{
+				remove_block_from_bin(first_block);
+			}
+
+			if(to_del == heap_top)
+				heap_top = heap;
+			to_del->prev->next = to_del->next;
+			to_del->next->prev = to_del->prev;
+			if(munmap(to_del, to_del->all_size) < 0)
+			{
+				perror("eroare la dezalocarea unui heap in scan");
+				return;
+			}
+			free_heaps--;
+		}
+		else
+			heap = heap->prev;
+	}
+}
+
 d_heap*
 free_some_to_os(d_block* block)
 {
