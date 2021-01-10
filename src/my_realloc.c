@@ -84,8 +84,9 @@ my_realloc(void* ptr, size_t newsize)
 		char* data = (char*)(block + 1);
 		char data_cpy[block->size];
 		memcpy(data_cpy, data, copy_for);
-		printf("entering free\n");
+		printf("entering fryufyfiyiyiglguigukghuee\n");
 		_unlock_free(data);
+		printf("going into malloc\n");
 
 		char* new_add = _unlock_alloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));

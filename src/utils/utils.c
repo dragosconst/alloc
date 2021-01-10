@@ -190,6 +190,7 @@ show_all_heaps()
 		heap = heap->prev;
 	}while(heap != old);
 
+	printf("we have %d free heaps\n", free_heaps);
 	for(int i = 0; i < 60; ++i)
 		printf("-");
 	printf("\n");

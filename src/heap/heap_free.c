@@ -33,6 +33,7 @@ void
 scan_and_kill_heaps(d_heap* ignore)
 {
 	d_heap* heap = heap_top;
+	printf(" im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here\n");
 	while(free_heaps > 2)
 	{
 		d_block* first_block = (d_block*)(heap + 1);
@@ -59,6 +60,7 @@ scan_and_kill_heaps(d_heap* ignore)
 		}
 		else
 			heap = heap->prev;
+//	printf("im here?");
 	}
 }
 

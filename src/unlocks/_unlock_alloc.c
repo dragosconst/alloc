@@ -1,9 +1,9 @@
 #include "my_alloc.h"
 
 void*
-my_alloc(size_t size)
+_unlock_alloc(size_t size)
 {
-	printf("bruh\n");
+	printf("asasasewffewrfwrwrfw4rw4rW4RWRRW\n");
 	if(!bins_initialized)
 	{
 		// n am gasit o metoda mai desteapta sa initializez bins
@@ -13,16 +13,15 @@ my_alloc(size_t size)
 	}
 	if(size <= 0)
 	{
-	pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
 	d_heap* heap;
 	d_block* block;
-	printf("my_alloc.c:asking for %ld space\n", size);
+	printf("unlock_alloc.c:asking for %ld space\n", size);
 	block = search_for_free_block(size); // functia asta cauta exclusiv in bins
 	if(!block)
 	{
-		printf("my_alloc.c: failed to find free block\n");
+		printf("unlock_alloc.c: failed to find free block\n");
 		heap = create_heap(size);
 		printf("heap created\n");
 		block = search_for_free_block(size);
@@ -34,7 +33,7 @@ my_alloc(size_t size)
 			//printf("large request of %ld\n", size);
 		}
 	}
-	printf("my_alloc.c: bloc adresa: %zd, size: %zd, struct size: %zd, last: %d\n\n",block, block->size, sizeof(d_block), block->last);
+	printf("unloc_alloc.c: bloc adresa: %zd, size: %zd, struct size: %zd, last: %d\n\n",block, block->size, sizeof(d_block), block->last);
 	printf("after malloc\n");
 	show_all_bins();
 	show_all_heaps();
