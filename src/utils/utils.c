@@ -145,7 +145,7 @@ get_closest_bin_type(size_t size)
 		}
 		return -1;
 	}
-	for(int i = index; i < 66; ++i)
+	for(int i = index; i < NBINS; ++i)
 		if(pseudo_bins[i] != NULL)
 			return i;
 	return -1;
@@ -202,7 +202,7 @@ show_all_bins()
 	for(int i = 0; i < 160; ++i)
 		printf("-");
 	printf("\n");
-	for(int i = 0; i < 66; ++i)
+	for(int i = 0; i < NBINS; ++i)
 	{
 		if(pseudo_bins[i])
 		{

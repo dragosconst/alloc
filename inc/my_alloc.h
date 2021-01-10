@@ -46,10 +46,10 @@ typedef struct my_block {
 }d_block;
 
 
-#define NBINS 		 		66
+#define NBINS 		 		70
 #define BLOCK_OFFSET 	  	sizeof(struct my_block) % 8
 #define HEAP_OFFSET  	  	sizeof(struct my_heap) % 8
-#define LARGE_RANGE			4 * getpagesize()
+#define LARGE_RANGE			getpagesize()
 #define VBIG_BLOCK_SIZE   	(((NBINS - 64) * LARGE_RANGE) + 512) // cel mai mare block size care incape intr-un large bin
 #define BIG_BLOCK_SIZE	  	513 // cel mai mic block size care incape intr-un large bin, 512 e cel mai mare smallbin
 #define PREALLOC_THRESHOLD	getpagesize() // pentru valori sub macro-ul asta, prealoc niste memorie pe heap, pentru o posibila optimizare
