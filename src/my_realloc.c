@@ -38,8 +38,6 @@ my_realloc(void* ptr, size_t newsize)
 	if(newsize <= block->size) // pe cazul in care vrem sa shrinkuim blocul
 	{
 		printf("realloc.c: block has size %ld\n", block->size);
-		if(block->free && get_bin_type(block->size) >= 0)
-			remove_block_from_bin(block);
 		block = split_block(newsize, block);
 		printf("realloc.c: block after split has %zd\n", block->size);
 		show_all_bins();
@@ -85,12 +83,14 @@ my_realloc(void* ptr, size_t newsize)
 		char data_cpy[block->size];
 		memcpy(data_cpy, data, copy_for);
 		printf("entering free\n");
-		_unlock_free(data);
+		pthread_mutex_unlock(&global_mutex); // free si malloc sunt thread safe, nu mai e nevoie de lock
+		my_free(data);
 
-		char* new_add = _unlock_alloc(newsize);
+		char* new_add = my_alloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));
 		printf("realloc almost done\n");
-		memcpy(new_add, data_cpy, copy_for);
+		pthread_mutex_lock(&global_mutex);
+		memcpy(new_add, data_cpy, copy_for); //memcpy not thread safe?
 		pthread_mutex_unlock(&global_mutex);
 		return (to_move + 1);
 	}

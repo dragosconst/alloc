@@ -1,5 +1,12 @@
 /*
 	Codul functiei free se regaseste aici.
+	Legat de MT, deoarece free se presupune ca e ultimu lucru facut de un program pe acel bloc de memorie,
+	la prima vedere poate nu e asa evident daca e nevoie sau nu de a asigura orice fel de locks pe functie.
+	Totusi, pentru a putea face operatiile merge corect, si pentru a putea plasa corect in bins un block
+	eliberat, e nevoie de a garanta integritatea acelor date de-alungul intregii executii a functiei.
+	Din cauza asta am considerat ca cel mai safe este sa pornesc lock-ul la intrarea in functiei, desi
+	poate parea ca asta ar creea o zona critica (foarte) mare, in realitate multe if-uri opresc functia
+	si elibereaza lock-urile.
 */
 
 #include "my_alloc.h"

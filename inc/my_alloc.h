@@ -70,6 +70,7 @@ extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
 extern pthread_mutex_t global_mutex;
 extern int bins_initialized;
 extern d_block* pseudo_bins[NBINS]; // o sa am doar 2 large bins
+extern int SEARCH_ATOMIC;
 
 // functiile importante
 void* my_alloc(size_t size);
@@ -81,6 +82,7 @@ void _unlock_free(void* ptr);
 
 // functii interne ale bibliotecii
 d_block* search_for_free_block(size_t size); // un heap free ori are un bloc liber, ori mai are spatiu in coada
+d_block* _unlock_search_for_free_block(size_t size);
 d_block* find_best_fit(size_t size, d_block* bin_start);
 size_t find_biggest_free_block(d_heap* heap);
 d_heap* create_heap(size_t size);
