@@ -13,6 +13,8 @@
 #ifndef MYALLOC_INCLU
 #define MYALLOC_INCLU
 
+#define ALIGNED_SIZE(str) (sizeof(str) % 8 ? 8 - sizeof(str) % 8 : 0)
+
 typedef struct _my_heap{
 	struct _my_heap* prev;
 	struct _my_heap* next;
@@ -24,7 +26,7 @@ typedef struct my_heap{
 	struct my_heap* prev;
 	struct my_heap* next;
 	size_t          all_size;
-	char			padding[8 - _Alignof(_unaligned_d_heap) % 8];
+	char			padding[ALIGNED_SIZE(_unaligned_d_heap)];
 }d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
 
 typedef struct _my_block{
@@ -42,7 +44,7 @@ typedef struct my_block {
 	size_t           size;
 	int		  		 free;
 	int 		 	 last; // daca e ultimul de pe heap-ul sau
-	char			 padding[8 - _Alignof(_unaligned_d_block) % 8];
+	char			 padding[ALIGNED_SIZE(_unaligned_d_block)];
 }d_block;
 
 
