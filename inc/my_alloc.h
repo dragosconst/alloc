@@ -18,7 +18,7 @@
 typedef struct _my_heap{
 	struct _my_heap* prev;
 	struct _my_heap* next;
-	size_t          all_size;
+	size_t           all_size;
 }_unaligned_d_heap;
 
 
@@ -27,7 +27,8 @@ typedef struct my_heap{
 	struct my_heap* next;
 	size_t          all_size;
 	char			padding[ALIGNED_SIZE(_unaligned_d_heap)];
-}d_heap; // tin metadate pt heap doar pt a eficientiza small heaps
+}d_heap;
+
 
 typedef struct _my_block{
 	struct my_block* prev;
@@ -35,7 +36,6 @@ typedef struct _my_block{
 	size_t           size;
 	int		  		 free;
 	int 		 	 last; // daca e ultimul de pe heap-ul sau
-
 }_unaligned_d_block;
 
 typedef struct my_block {
@@ -55,6 +55,8 @@ typedef struct my_block {
 #define VBIG_BLOCK_SIZE   	(((NBINS - 64) * LARGE_RANGE) + 512) // cel mai mare block size care incape intr-un large bin
 #define BIG_BLOCK_SIZE	  	513 // cel mai mic block size care incape intr-un large bin, 512 e cel mai mare smallbin
 #define PREALLOC_THRESHOLD	getpagesize() // pentru valori sub macro-ul asta, prealoc niste memorie pe heap, pentru o posibila optimizare
+#define MAX_FREE_HEAPS 		2	// cate heap-uri libere admit sa poata apartine unui proces
+
 /*
 Un pic despre bins. Nu am implementat intocmai cum este in c standard, in primul rand am
 64 de smallbins, in loc de 62, si numarul de large bins e definit de macroul NBINS - 64.
@@ -62,7 +64,7 @@ In al doilea rand, n-am mai implementat fast bins si unsorted bins, deoarece mi 
 f dificil de scris si la unsorted nici nu am inteles foarte bine ideea din spate. In al
 treilea rand, deoarece am facut large bins sa fie definibili de user prin macro, nu am
 mai facut si optimizarea din c, in care large bins-urile pe size-uri mai mici au si un
-range mai mic, toate large bins-urile mele au range 4 * getpagesize(). Tinand cont ca
+range mai mic, toate large bins-urile mele au range LARGE_RANGE. Tinand cont ca
 implementarea mea de bins e asa de diferita de cea din C, si ca seamana mai mult doar
 ca concept general, am denumit array-ul de bins "pseudo_bins", pentru ca totusi nu sunt
 totuna cu bins-urile din glibc.
@@ -71,7 +73,7 @@ totuna cu bins-urile din glibc.
 extern d_heap* heap_top; // vreau aceiasi versiune a variabilei in tot proiectul
 extern pthread_mutex_t global_mutex;
 extern int bins_initialized;
-extern d_block* pseudo_bins[NBINS]; // o sa am doar 2 large bins
+extern d_block* pseudo_bins[NBINS];
 extern int SEARCH_ATOMIC;
 extern int free_heaps;
 
@@ -80,8 +82,8 @@ void* my_alloc(size_t size);
 void my_free(void* ptr);
 void* my_calloc(size_t count, size_t size);
 void* my_realloc(void* ptr, size_t newsize);
-void* _unlock_alloc(size_t size);
-void _unlock_free(void* ptr);
+//void* _unlock_alloc(size_t size);
+//void _unlock_free(void* ptr);
 
 // functii interne ale bibliotecii
 d_block* search_for_free_block(size_t size); // un heap free ori are un bloc liber, ori mai are spatiu in coada

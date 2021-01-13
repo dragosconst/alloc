@@ -23,7 +23,6 @@ get_bin_type(size_t size)
 	//printf("utils.c: checking size is %zd max size is %zd\n", size);
 	// se presupune ca e dat un size care incape intr-un bin
 	size_t index = (size / 8) - 1;
-	printf("utils.c: index is %zd\n", index);
 	if(index <= 63) // small bins
 		return (int)index;
 	else if(size <= VBIG_BLOCK_SIZE)
@@ -42,7 +41,7 @@ get_bin_type(size_t size)
 	{
 		// daca ajung aici, nu e neaparat trimis prost, de-aia am pus ?
 		// sunt situatii in care verific daca functia returneaza -1 exclusiv
-		printf("parametru size trimis in get bin type prost: %ld?\n", size);
+		//printf("parametru size trimis in get bin type prost: %ld?\n", size);
 		return -1;
 	}
 }
@@ -53,17 +52,14 @@ remove_block_from_bin(d_block* victim)
 	if(victim->size > VBIG_BLOCK_SIZE) return; // am apelat pt un block care nu e in niciun bin
 	if(pseudo_bins[get_bin_type(victim->size)] == victim) // e primul in bin
 	{
-		printf("ramura if\n");
 		pseudo_bins[get_bin_type(victim->size)] = (victim->next == victim ? NULL : victim->next); // daca e singurul din bin, il inlocuiesc cu NULL
 	}
 	else
 	{
 		d_block* bin = pseudo_bins[get_bin_type(victim->size)];
-		if(!bin) printf("thinking about %p\n", bin);
-		printf("bin is %p and br is %p and bin->next is %p and br->next is %p and bin->prev is %p and br->prev is %p\n", bin, victim, bin->next, victim->next, bin->prev, victim->prev);
+//		if(!bin) printf("thinking about %p\n", bin);
+//		printf("bin is %p and br is %p and bin->next is %p and br->next is %p and bin->prev is %p and br->prev is %p\n", bin, victim, bin->next, victim->next, bin->prev, victim->prev);
 	}
-	//printf("br %p are size %zd\n", br, sizeof(br));
-	//printf("br->prev = %p, br->next = %p\n",br->prev,br->next);
 	if(victim->prev)
 		victim->prev->next = victim->next;
 	if(victim->next)
@@ -165,11 +161,11 @@ show_all_heaps()
 	d_heap* heap = heap_top;
 	if(!heap)
 	{
-		printf("no heaps to show\n\n\n");
+//		printf("no heaps to show\n\n\n");
 		return;
 	}
 
-	for(int i = 0; i < 60; ++i)
+/*	for(int i = 0; i < 60; ++i)
 		printf("-");
 	printf("\n");
 
@@ -194,12 +190,13 @@ show_all_heaps()
 	for(int i = 0; i < 60; ++i)
 		printf("-");
 	printf("\n");
+*/
 }
 
 void
 show_all_bins()
 {
-	for(int i = 0; i < 160; ++i)
+/*	for(int i = 0; i < 160; ++i)
 		printf("-");
 	printf("\n");
 	for(int i = 0; i < NBINS; ++i)
@@ -212,7 +209,7 @@ show_all_bins()
 			int max_nr = 0;
 			do
 			{
-				printf("%p with size %zd, ",init, init->size); 
+				printf("%p with size %zd, ",init, init->size);
 				max_nr++;
 				init = init->next;
 			}while(old != init && max_nr <= 10);
@@ -227,4 +224,5 @@ show_all_bins()
 	for(int i = 0; i < 160; ++i)
 		printf("-");
 	printf("\n");
+*/
 }

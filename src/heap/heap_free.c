@@ -23,7 +23,7 @@ free_heap_to_os(d_block* block)
 	//printf("heap has %ld left\n", heap->all_size);
 	if(munmap(heap, heap->all_size) < 0)
 	{
-		perror("eroare la dezalocarea unui heap");
+		//perror("eroare la dezalocarea unui heap");
 		return 0;
 	}
 	return 1;
@@ -33,7 +33,6 @@ void
 scan_and_kill_heaps(d_heap* ignore)
 {
 	d_heap* heap = heap_top;
-	printf(" im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here im here\n");
 	while(free_heaps > 2)
 	{
 		d_block* first_block = (d_block*)(heap + 1);
@@ -53,14 +52,13 @@ scan_and_kill_heaps(d_heap* ignore)
 			to_del->next->prev = to_del->prev;
 			if(munmap(to_del, to_del->all_size) < 0)
 			{
-				perror("eroare la dezalocarea unui heap in scan");
+				//perror("eroare la dezalocarea unui heap in scan");
 				return;
 			}
 			free_heaps--;
 		}
 		else
 			heap = heap->prev;
-//	printf("im here?");
 	}
 }
 
@@ -74,14 +72,11 @@ free_some_to_os(d_block* block)
 	ssize_t to_free = total_size - (ssize_t)VBIG_BLOCK_SIZE;
 	char* max_len = (char*)block + sizeof(d_block) + (ssize_t)VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
 	ssize_t offset = (uintptr_t)(max_len) % getpagesize();
-	printf("vbig block size %zd total_size is %zd tot-big=%zd\n", (ssize_t)VBIG_BLOCK_SIZE, total_size, total_size - (ssize_t)VBIG_BLOCK_SIZE);
-	printf("total size %zd to free %zd max len %zd offset %zd\n", total_size, to_free, max_len, offset);
 	to_free += ((uintptr_t)(max_len) % getpagesize());
 	if((uintptr_t)(max_len) % getpagesize()) max_len -= ((uintptr_t)(max_len) % getpagesize()); // adaug orice mai ramane din pagina pe care se afla max_len
-	printf("total size %zd to free %zd max len %zd offset %zd\n", total_size, to_free, max_len, offset);
 	if(munmap(max_len, to_free) < 0)
 	{
-		perror("eroare la eliberarea de memorie");
+		//perror("eroare la eliberarea de memorie");
 		return NULL;
 	}
 	heap->all_size -= to_free; // could be buggy?

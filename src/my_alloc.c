@@ -3,7 +3,6 @@
 void*
 my_alloc(size_t size)
 {
-	printf("bruh\n");
 	pthread_mutex_lock(&global_mutex);
 	if(!bins_initialized)
 	{
@@ -22,14 +21,13 @@ my_alloc(size_t size)
 	d_heap* heap;
 	d_block* block;
 
-	printf("my_alloc.c:asking for %ld space\n", size);
+	//printf("my_alloc.c:asking for %ld space\n", size);
 	block = search_for_free_block(size); // functia asta cauta exclusiv in bins
 	if(!block)
 	{
-		printf("my_alloc.c: failed to find free block\n");
+		//printf("my_alloc.c: failed to find free block\n");
 		pthread_mutex_lock(&global_mutex);
 		heap = create_heap(size);
-		printf("heap created\n");
 		block = _unlock_search_for_free_block(size);
 		if(!block)
 		{	// asta inseamna ca e prea mare sa poata fi alocat pe bins, deci heap-ul tocmai creat e alocat special doar pt el
@@ -40,11 +38,10 @@ my_alloc(size_t size)
 		}
 		pthread_mutex_unlock(&global_mutex);
 	}
-	printf("my_alloc.c: bloc adresa: %zd, size: %zd, struct size: %zd, last: %d\n\n",block, block->size, sizeof(d_block), block->last);
-	printf("after malloc\n");
+	//printf("my_alloc.c: bloc adresa: %zd, size: %zd, struct size: %zd, last: %d\n\n",block, block->size, sizeof(d_block), block->last);
 	pthread_mutex_lock(&global_mutex);
-	show_all_bins();
-	show_all_heaps();
+	//show_all_bins();
+	//show_all_heaps();
 	pthread_mutex_unlock(&global_mutex);
 	return (block + 1);
 }

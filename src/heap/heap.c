@@ -21,7 +21,7 @@ create_heap(size_t size)
 		heap = mmap(NULL, size + sizeof(d_block) + sizeof(d_heap), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 		heap->all_size = closest_page_size(size + sizeof(d_block) + sizeof(d_heap)) - sizeof(d_heap) - sizeof(d_block);
 	}
-	printf("heap.c: newly created heap has size %zd\n", heap->all_size);
+	//printf("heap.c: newly created heap has size %zd\n", heap->all_size);
 	if(!heap_top)
 	{
 		heap_top = heap;
@@ -41,7 +41,6 @@ create_heap(size_t size)
 	size_t align_size = heap->all_size;
 	d_block* top_block = (d_block*)((char*)heap + sizeof(d_heap)); // blocul cu tot size-ul cerut de user in el
 	top_block->size = align_size;
-	//printf("heap.c: new heap size is %ld\n", top_block->size);
 	top_block->free = 1;
 	top_block->last = 1;
 	// not sure this is needed

@@ -11,15 +11,7 @@
 void*
 my_realloc(void* ptr, size_t newsize)
 {
-	/*
-		Pentru MT: vreau ca block-ul trimis sa fie protejat de
-		mutex pana cand ii gasesc spatiu sau ii dau free.
-		De asemenea, am nevoie sa evit lock-urile pe malloc si
-		free (pt ca oricum realloc in sine e atomic), deci fol
-		flag-ul MALLOC_ATOMIC ca sa ma asigur ca free si malloc
-		nu dau aiurea lock la un mutex deja lock-uit de thread.
-	*/
-	printf("realloc started\n");
+	//printf("realloc started\n");
 	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
 	{
@@ -30,17 +22,14 @@ my_realloc(void* ptr, size_t newsize)
 	pthread_mutex_lock(&global_mutex);
 	if(!is_valid_addr(block))
 	{
-		printf("realloc pe pointer invalid!\n");
 		pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
 	if(newsize <= block->size) // pe cazul in care vrem sa shrinkuim blocul
 	{
-		printf("realloc.c: block has size %ld\n", block->size);
 		if(block->free && get_bin_type(block->size) >= 0)
 			remove_block_from_bin(block);
 		block = split_block(newsize, block);
-		printf("realloc.c: block after split has %zd\n", block->size);
 		show_all_bins();
 		show_all_heaps();
 		pthread_mutex_unlock(&global_mutex);
@@ -53,7 +42,6 @@ my_realloc(void* ptr, size_t newsize)
 		if(!block->last)
 		{
 			d_block* next_block = (d_block*)((char*)block + sizeof(d_block) + block->size);
-			if(!is_valid_addr(next_block)) printf("HOW IN GOTTS NAME????\n\n");
 			if(is_valid_addr(next_block) && next_block->free)
 			{
 				/*
@@ -78,19 +66,15 @@ my_realloc(void* ptr, size_t newsize)
 			}
 		}
 		// trebuie cautat altundeva spatiu
-		printf("getting real close to finishing realloc\n");
 		size_t copy_for = block->size;
 		char* data = (char*)(block + 1);
 		char data_cpy[block->size];
 		memcpy(data_cpy, data, copy_for);
-		printf("entering fryufyfiyiyiglguigukghuee\n");
 		pthread_mutex_unlock(&global_mutex);
 		my_free(data);
-		printf("going into malloc\n");
 
 		char* new_add = my_alloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));
-		printf("realloc almost done\n");
 		pthread_mutex_lock(&global_mutex);
 		memcpy(new_add, data_cpy, copy_for);
 		pthread_mutex_unlock(&global_mutex);

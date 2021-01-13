@@ -14,7 +14,6 @@ is_valid_addr(void* addr) // verific daca exista vreun bloc cu adresa data de us
 		d_block* block = (d_block*)(heap + 1);
 		while(1)
 		{
-			//printf("block is %p addr is %p\n", block, addr);
 			if(block == addr)
 				return 1;
 			if(block->last)
@@ -23,14 +22,12 @@ is_valid_addr(void* addr) // verific daca exista vreun bloc cu adresa data de us
 		}
 		heap = heap->prev;
 	}while(heap != prev);
-	//printf("finished heap\n");
 	return 0;
 }
 
 d_heap*
 get_heap_of_block(d_block* block)
 {
-	//printf("searching for heap\n");
 	d_heap* heap = heap_top;
 	d_heap* prev = heap_top;
 	do
@@ -46,7 +43,6 @@ get_heap_of_block(d_block* block)
 		}
 		heap = heap->prev;
 	}while(heap != prev);
-	//printf("found good heap\n");
 	return NULL;
 }
 
@@ -58,10 +54,8 @@ get_prev_block(d_block* block)
 	if(traverse == block) return NULL; // nu ne intereseaza daca e primu block
 	while((d_block*)((char*)traverse + sizeof(d_block) + traverse->size) != block)
 	{
-		//printf("block_free.c: traverse is %zd block is %zd\n", traverse, block);
 		traverse = (d_block*)((char*)traverse + sizeof(d_block) + traverse->size);
 	}
-	//printf("am ajuns la %p iar block e %p\n", traverse, block);
 	// acum, traverse e blocul fix dinainte
 	if(traverse->free)
 		return traverse;
@@ -73,7 +67,6 @@ get_next_block(d_block* block)
 	if(block->last)
 		return NULL;
 
-	//printf("searching for next block after block %p\n",block);
 	d_heap* heap = get_heap_of_block(block);
 	d_block* traverse = (d_block*)(heap + 1);
 	d_block* old_val = NULL;
@@ -83,7 +76,6 @@ get_next_block(d_block* block)
 		if(!old_val->last)
 			traverse = (d_block*)((char*)traverse + sizeof(d_block) + traverse->size);
 	}
-	//printf("am ajuns la %p iar block e %p\n", traverse, block);
 	// acum, traverse e blocul fix de dupa
 	if(traverse->free)
 		return traverse;
@@ -97,25 +89,20 @@ merge_blocks(d_block* bl, d_block* br)
 	//printf("block_free.c: merging block of size %zd with block of size %zd\n", bl->size, br->size);
 	//printf("bl %p are size %zd\n", bl, sizeof(d_block));
 	//printf("br %p are size %zd\n", br, sizeof(br));
-	// de observat ca e mostenita valoarea de free din bl, evident se presupune ca e free si bl, si br
+	// de observat ca e mostenita valoarea de free din bl
 	if(bl->free)
 		remove_block_from_bin(bl);
 	bl->size += sizeof(d_block) + br->size;
-	printf("nocrash\n");
+
 	if(bl->size % 8 && bl->size < BIG_BLOCK_SIZE / 4) // logic nu ar trebui sa ajunga pe cazul asta niciodata
 	{
-		printf("block_free.c: failed size calculation %ld\n", bl->size);
 		while(1);
 	}
 	if(br->last)
 		bl->last = 1;
-	printf("nocrash2\n");
+
 	// br trebuie scos din bin_ul sau, de bl se ocupa ala care a apelat functia
 	if(br->free)
 		remove_block_from_bin(br);
-	// nu e obligatoriu sa le fac NULL
-	//br->next = NULL;
-	//br->prev = NULL;
-	printf("merge finished\n");
 	return bl;
 }
