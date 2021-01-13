@@ -13,7 +13,7 @@ my_calloc(size_t count, size_t size)
 	// check overflow !!
 	if(SIZE_MAX / count < size)
 		return NULL;
-	void* ptr = malloc(count * size);
+	void* ptr = my_alloc(count * size);
 
 	pthread_mutex_lock(&global_mutex);
 	memset(ptr, 0, count * size);
