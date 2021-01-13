@@ -7,15 +7,14 @@
 void
 my_free(void* ptr)
 {
-	if(pthread_mutex_lock(&global_mutex))
-		while(1); // nimeni nu tre sa se atinga de block pana free nu e gata
+	pthread_mutex_lock(&global_mutex);
 	printf("im freeing %p\n", (char*)ptr - sizeof(d_block));
 	show_all_bins();
 	show_all_heaps();
 	if(!ptr || !heap_top)
 	{
 		printf("ptr is %p and heap_top is %p\n", ptr, heap_top);
-		if(pthread_mutex_unlock(&global_mutex)) while(1);
+		pthread_mutex_unlock(&global_mutex);
 		return;
 	}
 	//show_all_heaps();
@@ -27,8 +26,7 @@ my_free(void* ptr)
 		d_heap* heap  = get_heap_of_block(block);
 		printf("heap e %p\n", heap);
 		printf("size %ld\n", block->size);
-		//while(1);
-		if(pthread_mutex_unlock(&global_mutex)) while(1);
+		pthread_mutex_unlock(&global_mutex);
 		return;
 	}
 	printf("passed validation\n");
@@ -38,7 +36,7 @@ my_free(void* ptr)
 	{
 		free_heap_to_os(block);
 		show_all_heaps();
-		if(pthread_mutex_unlock(&global_mutex)) while(1);
+		pthread_mutex_unlock(&global_mutex);
 		return;
 	}
 	printf("free.c: before merging, size is %zd\n", block->size);
@@ -75,7 +73,6 @@ my_free(void* ptr)
 		free_heaps++;
 	if(free_heaps > 2) //2 e ales arbitrar
 	{
-		printf("BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN PE BAN  PE BAN PE BAN\n\n\n\n\n\n\n\n\n\n\n\n");
 		show_all_heaps();
 		scan_and_kill_heaps(my_heap); // omor heap-urile in plus
 	}
@@ -85,7 +82,7 @@ my_free(void* ptr)
 	insert_block_in_bin(block);
 	show_all_bins();
 	show_all_heaps();
-	if(pthread_mutex_unlock(&global_mutex)) while(1);
+	pthread_mutex_unlock(&global_mutex);
 	// no double free protection, in standard am vazut ca nu cere
 }
 

@@ -40,6 +40,8 @@ search_for_free_block(size_t size)
 	if(size > VBIG_BLOCK_SIZE * 2) // adica nu e in niciun tip de bin
 		return NULL;
 
+	pthread_mutex_lock(&global_mutex);
+
 	size = aligned_size(size); // alinierea ma ajuta mai ales la implementarea binsurilor
 	int bin_index = get_bin_type(size);
 	d_block* bin_block = pseudo_bins[bin_index];
@@ -56,6 +58,7 @@ search_for_free_block(size_t size)
 				free_heaps--;
 			bin_block->free = 0;
 			/*SPLIT !!!*/ bin_block = split_block(size, bin_block);
+			pthread_mutex_unlock(&global_mutex);
 			return bin_block;
 		}
 		else
@@ -66,7 +69,10 @@ search_for_free_block(size_t size)
 		// poate totusi putem lua un bin mai mare si sa-l splituim
 		bin_index = get_closest_bin_type(size);
 		if(bin_index < 0) // nu exista literalmente niciun bin pe care-l putem lua
+		{
+			pthread_mutex_unlock(&global_mutex);
 			return NULL;
+		}
 		if(bin_index <= 63)
 			bin_block = pseudo_bins[bin_index];
 		else
@@ -81,6 +87,7 @@ search_for_free_block(size_t size)
 		bin_block->free = 0;
 		printf("block.c: request granted\n");
 		//bin_block->next = bin_block->prev = NULL;
+		pthread_mutex_unlock(&global_mutex);
 		return bin_block;
 	}
 
@@ -90,6 +97,7 @@ search_for_free_block(size_t size)
 	bin_block->free = 0;
 	remove_block_from_bin(bin_block);
 	//bin_block->next = bin_block->prev = NULL;
+	pthread_mutex_unlock(&global_mutex);
 	return bin_block;
 }
 

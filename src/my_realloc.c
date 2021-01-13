@@ -19,16 +19,15 @@ my_realloc(void* ptr, size_t newsize)
 		flag-ul MALLOC_ATOMIC ca sa ma asigur ca free si malloc
 		nu dau aiurea lock la un mutex deja lock-uit de thread.
 	*/
-	pthread_mutex_lock(&global_mutex);
 	printf("realloc started\n");
 	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
 	{
-		pthread_mutex_unlock(&global_mutex);
 		return my_alloc(newsize);
 	}
 
 	d_block* block = (d_block*)((char*)ptr - sizeof(d_block));
+	pthread_mutex_lock(&global_mutex);
 	if(!is_valid_addr(block))
 	{
 		printf("realloc pe pointer invalid!\n");
@@ -85,12 +84,14 @@ my_realloc(void* ptr, size_t newsize)
 		char data_cpy[block->size];
 		memcpy(data_cpy, data, copy_for);
 		printf("entering fryufyfiyiyiglguigukghuee\n");
-		_unlock_free(data);
+		pthread_mutex_unlock(&global_mutex);
+		my_free(data);
 		printf("going into malloc\n");
 
-		char* new_add = _unlock_alloc(newsize);
+		char* new_add = my_alloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));
 		printf("realloc almost done\n");
+		pthread_mutex_lock(&global_mutex);
 		memcpy(new_add, data_cpy, copy_for);
 		pthread_mutex_unlock(&global_mutex);
 		return (to_move + 1);
