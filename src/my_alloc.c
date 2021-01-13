@@ -1,7 +1,7 @@
 #include "my_alloc.h"
 
 void*
-my_alloc(size_t size)
+malloc(size_t size)
 {
 	pthread_mutex_lock(&global_mutex);
 	if(!bins_initialized)

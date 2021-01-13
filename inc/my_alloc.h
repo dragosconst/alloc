@@ -1,11 +1,9 @@
 #include <assert.h>
 #include <string.h>
-#include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <sys/mman.h>
 #include <stdalign.h>
@@ -78,10 +76,10 @@ extern int SEARCH_ATOMIC;
 extern int free_heaps;
 
 // functiile importante
-void* my_alloc(size_t size);
-void my_free(void* ptr);
-void* my_calloc(size_t count, size_t size);
-void* my_realloc(void* ptr, size_t newsize);
+void* malloc(size_t size);
+void free(void* ptr);
+void* calloc(size_t count, size_t size);
+void* realloc(void* ptr, size_t newsize);
 //void* _unlock_alloc(size_t size);
 //void _unlock_free(void* ptr);
 

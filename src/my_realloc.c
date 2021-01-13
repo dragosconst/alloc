@@ -9,13 +9,13 @@
 #include "my_alloc.h"
 
 void*
-my_realloc(void* ptr, size_t newsize)
+realloc(void* ptr, size_t newsize)
 {
 	//printf("realloc started\n");
 	newsize = aligned_size(newsize);
 	if(!ptr) // realloc pe NULL e malloc
 	{
-		return my_alloc(newsize);
+		return malloc(newsize);
 	}
 
 	d_block* block = (d_block*)((char*)ptr - sizeof(d_block));
@@ -71,9 +71,9 @@ my_realloc(void* ptr, size_t newsize)
 		char data_cpy[block->size];
 		memcpy(data_cpy, data, copy_for);
 		pthread_mutex_unlock(&global_mutex);
-		my_free(data);
+		free(data);
 
-		char* new_add = my_alloc(newsize);
+		char* new_add = malloc(newsize);
 		d_block* to_move = (d_block*)((char*)new_add - sizeof(d_block));
 		pthread_mutex_lock(&global_mutex);
 		memcpy(new_add, data_cpy, copy_for);

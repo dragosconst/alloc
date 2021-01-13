@@ -5,7 +5,7 @@
 #include "my_alloc.h"
 
 void
-my_free(void* ptr)
+free(void* ptr)
 {
 	pthread_mutex_lock(&global_mutex);
 	//printf("im freeing %p\n", (char*)ptr - sizeof(d_block));
