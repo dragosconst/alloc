@@ -158,14 +158,14 @@ aligned_size(size_t size)
 void
 show_all_heaps()
 {
-	d_heap* heap = heap_top;
+/*	d_heap* heap = heap_top;
 	if(!heap)
 	{
-//		printf("no heaps to show\n\n\n");
+		printf("no heaps to show\n\n\n");
 		return;
 	}
 
-/*	for(int i = 0; i < 60; ++i)
+	for(int i = 0; i < 60; ++i)
 		printf("-");
 	printf("\n");
 

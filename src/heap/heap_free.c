@@ -67,7 +67,7 @@ free_some_to_os(d_block* block)
 {
 	// functia e apelata cand vreau sa dau pagini la OS pana raman cu ceva ce poate fi pastrat in bin
 	d_heap* heap = get_heap_of_block(block);
-	// stim sigur ca putem da fara probleme tot peste VBIG_BLOCK_SIZE *2
+	// stim sigur ca putem da fara probleme tot peste VBIG_BLOCK_SIZE
 	size_t total_size = block->size;
 	size_t to_free = total_size - (size_t)VBIG_BLOCK_SIZE;
 	char* max_len = (char*)block + sizeof(d_block) + (size_t)VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
@@ -79,7 +79,7 @@ free_some_to_os(d_block* block)
 		//perror("eroare la eliberarea de memorie");
 		return NULL;
 	}
-	heap->all_size -= to_free; // could be buggy?
+	heap->all_size -= to_free; // could be buggy? nu pare
 	block->size -= to_free; // block trebuie bagat la loc in bin de funtia care apeleaza aici
 	return heap;
 }

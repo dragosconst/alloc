@@ -1,13 +1,5 @@
 /*
-	Aici o sa fie implementate functiile principale legate de blocuri. Blocurile sunt
-	unitatea minima din mallocul meu, ele sunt subdiviziuni pe heap-uri. Desi blocurile
-	nu au un atribut explicit type, tipul se deduce imediat din dimensiunea lor. Evident,
-	un bloc nu poate fi stocat decat pe un heap de tipul sau.
-
-	Daca nu exista niciun bloc liber suficient de mare, dar avem la capatul unui heap
-	destul spatiu liber, atunci blocul e adaugat in capat cu functia append_block.
-	Denumirea functiei poate fi un pic misleading, eu nu adaug nimic concret la heap,
-	doar marchez o sectiune de la finalul sau ca fiind rezervata acestui bloc.
+	Aici o sa fie implementate functiile principale legate de blocuri pentru malloc.
 */
 #include "my_alloc.h"
 
@@ -33,7 +25,7 @@ d_block*
 search_for_free_block(size_t size)
 {
 	// ne uitam daca e prea mare sa aiba ce cauta in bins first of all
-	if(size > VBIG_BLOCK_SIZE * 2) // adica nu e in niciun tip de bin
+	if(size > VBIG_BLOCK_SIZE) // adica nu e in niciun tip de bin
 		return NULL;
 
 	pthread_mutex_lock(&global_mutex);

@@ -68,6 +68,7 @@ my_free(void* ptr)
 	//printf("free.c: searching for bins\n");
 	// insert free block in bin
 	insert_block_in_bin(block);
+	show_all_heaps();
 	pthread_mutex_unlock(&global_mutex);
 	// no double free protection, in standard am vazut ca nu cere
 }
