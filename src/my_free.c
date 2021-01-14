@@ -19,7 +19,8 @@ my_free(void* ptr)
 	//show_all_heaps();
 	d_block* block = (d_block*)((char*)ptr - sizeof(d_block));
 	//printf("free.c: going into add validation\n");
-	if(!is_valid_addr(block))
+	d_heap* my_heap;
+	if(!(my_heap = get_heap_of_block(block)))
 	{
 		pthread_mutex_unlock(&global_mutex);
 		return;
@@ -56,7 +57,6 @@ my_free(void* ptr)
 		free_some_to_os(block);
 	}
 
-	d_heap* my_heap = get_heap_of_block(block);
 	if(my_heap->all_size == block->size)
 		free_heaps++;
 	if(free_heaps > 2) //2 e ales arbitrar
