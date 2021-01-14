@@ -52,8 +52,8 @@ my_realloc(void* ptr, size_t newsize)
 				{
 					if(get_bin_type(next_block->size) >= 0) // stim deja ca next_block e free
 						remove_block_from_bin(next_block);
-					if(sizeof(d_block) + 8 >= extra_size) // daca metadatele blocului sunt destule pt realloc, nu-mi ramane decat sa fac split cu cea mai mica valoarea posibila
-						next_block = split_block(8, next_block);
+					if(sizeof(d_block) >= extra_size) // daca metadatele blocului sunt destule pt realloc, nu-mi ramane decat sa fac split cu cea mai mica valoarea posibila
+						next_block = split_block(0, next_block);
 					else
 						next_block = split_block(extra_size - sizeof(d_block), next_block);
 					block->size += next_block->size + sizeof(d_block);
