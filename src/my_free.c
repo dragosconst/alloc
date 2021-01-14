@@ -59,7 +59,7 @@ my_free(void* ptr)
 
 	if(my_heap->all_size == block->size)
 		free_heaps++;
-	if(free_heaps > 2) //2 e ales arbitrar
+	if(free_heaps > MAX_FREE_HEAPS) //macro-ul e ales arbitrar
 	{
 		show_all_heaps();
 		scan_and_kill_heaps(my_heap); // omor heap-urile in plus

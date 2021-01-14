@@ -33,7 +33,7 @@ void
 scan_and_kill_heaps(d_heap* ignore)
 {
 	d_heap* heap = heap_top;
-	while(free_heaps > 2)
+	while(free_heaps > MAX_FREE_HEAPS)
 	{
 		d_block* first_block = (d_block*)(heap + 1);
 		if(heap != ignore && first_block->free && first_block->size == heap->all_size)
@@ -68,10 +68,10 @@ free_some_to_os(d_block* block)
 	// functia e apelata cand vreau sa dau pagini la OS pana raman cu ceva ce poate fi pastrat in bin
 	d_heap* heap = get_heap_of_block(block);
 	// stim sigur ca putem da fara probleme tot peste VBIG_BLOCK_SIZE *2
-	ssize_t total_size = block->size;
-	ssize_t to_free = total_size - (ssize_t)VBIG_BLOCK_SIZE;
-	char* max_len = (char*)block + sizeof(d_block) + (ssize_t)VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
-	ssize_t offset = (uintptr_t)(max_len) % getpagesize();
+	size_t total_size = block->size;
+	size_t to_free = total_size - (size_t)VBIG_BLOCK_SIZE;
+	char* max_len = (char*)block + sizeof(d_block) + (size_t)VBIG_BLOCK_SIZE; // adresa pana unde ar putea sa se intinda block-ul dat, fara sa depaseasca cel mai mare bin
+	size_t offset = (uintptr_t)(max_len) % getpagesize();
 	to_free += ((uintptr_t)(max_len) % getpagesize());
 	if((uintptr_t)(max_len) % getpagesize()) max_len -= ((uintptr_t)(max_len) % getpagesize()); // adaug orice mai ramane din pagina pe care se afla max_len
 	if(munmap(max_len, to_free) < 0)

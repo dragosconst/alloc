@@ -94,10 +94,6 @@ merge_blocks(d_block* bl, d_block* br)
 		remove_block_from_bin(bl);
 	bl->size += sizeof(d_block) + br->size;
 
-	if(bl->size % 8 && bl->size < BIG_BLOCK_SIZE / 4) // logic nu ar trebui sa ajunga pe cazul asta niciodata
-	{
-		while(1);
-	}
 	if(br->last)
 		bl->last = 1;
 
