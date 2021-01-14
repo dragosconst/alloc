@@ -40,7 +40,7 @@ search_for_free_block(size_t size)
 
 	size = aligned_size(size); // alinierea ma ajuta mai ales la implementarea binsurilor
 	int bin_index = get_bin_type(size);
-	d_block* bin_block = pseudo_bins[bin_index];
+	d_block* bin_block = (bin_index >= 0 ? pseudo_bins[bin_index] : NULL);
 	//printf("block.c: asking for bin %d...\n", bin_index);
 	if(bin_block && size >= BIG_BLOCK_SIZE)
 	{	// la large bins trebuie facut si un split si un search mai comprehensiv
