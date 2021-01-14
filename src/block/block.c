@@ -102,7 +102,7 @@ split_block(size_t size, d_block* block) // nu modifica campul free din block-ul
 		return block;
 	}
 	// size has to be aligned
-	if((ssize_t)block->size - (ssize_t)size < (ssize_t)(sizeof(d_block) + 8)) // daca spatiul in plus e prea mic sa mai bagam metadate
+	if(block->size < sizeof(d_block) + 8 + size) // daca spatiul in plus e prea mic sa mai bagam metadate
 	{
 		return block; // nu are rost sa fac split, ca as corupe segmentul de date
 	}
