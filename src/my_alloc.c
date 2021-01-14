@@ -3,20 +3,19 @@
 void*
 my_alloc(size_t size)
 {
-	pthread_mutex_lock(&global_mutex);
 	if(!bins_initialized)
 	{
+		pthread_mutex_lock(&global_mutex);
 		// n am gasit o metoda mai desteapta sa initializez bins
 		for(int i = 0; !bins_initialized && i < 66; ++i)
 			pseudo_bins[i] = NULL;
 		bins_initialized = 1;
+		pthread_mutex_unlock(&global_mutex);
 	}
 	if(size <= 0)
 	{
-		pthread_mutex_unlock(&global_mutex);
 		return NULL;
 	}
-	pthread_mutex_unlock(&global_mutex);
 
 	d_heap* heap;
 	d_block* block;
